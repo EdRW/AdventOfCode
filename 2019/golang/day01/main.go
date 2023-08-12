@@ -8,8 +8,12 @@ import (
 	"strconv"
 )
 
-func requiredFuel(moduleMass int) int {
-	return moduleMass/3 - 2
+func requiredFuel(mass int) int {
+	fuelMass := mass/3 - 2
+	if fuelMass <= 0 {
+		return 0
+	}
+	return fuelMass + requiredFuel(fuelMass)
 }
 
 func main() {
@@ -36,5 +40,5 @@ func main() {
 		totalFuel += moduleFuel
 	}
 
-	fmt.Println(totalFuel)
+	fmt.Printf("total fuel: %d\n", totalFuel)
 }
