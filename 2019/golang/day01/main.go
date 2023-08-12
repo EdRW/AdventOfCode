@@ -36,8 +36,7 @@ func main() {
 			return
 		}
 
-		moduleFuel := requiredFuel(moduleMass)
-		totalFuel += moduleFuel
+		totalFuel += requiredFuel(moduleMass)
 	}
 
 	fmt.Printf("total fuel: %d\n", totalFuel)
