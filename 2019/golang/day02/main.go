@@ -8,50 +8,72 @@ import (
 	"aoc/utils"
 )
 
-type CommandName int
+type OpCode int
 
 const (
-	Add CommandName = iota + 1
+	Add OpCode = iota + 1
 	Multiply
-	Halt CommandName = 99
+	Halt OpCode = 99
 )
 
+func add(param1 int, param2 int) int {
+	return param1 + param2
+}
+
+func multiply(param1 int, param2 int) int {
+	return param1 * param2
+}
+
+var Ops = map[OpCode]func(int, int) int{
+	Add:      add,
+	Multiply: multiply,
+}
+
 type Machine struct {
-	output int
+	pointer  int
+	size     int
+	intCodes []int
+	output   int
 }
 
-func getIO(instruction []int) (int, int, int) {
-	return instruction[1], instruction[2], instruction[3]
+func NewMachine(size int, intCodes []int) *Machine {
+	return &Machine{
+		pointer:  0,
+		size:     size,
+		intCodes: intCodes,
+	}
 }
 
-func (m *Machine) process(start int, intCodes []int) bool {
-	optCode := CommandName(intCodes[start])
-	if optCode == Halt {
-		m.output = intCodes[0]
+func (m *Machine) deref(pointer int) int {
+	return m.intCodes[m.intCodes[pointer]]
+}
+
+func (m *Machine) setValue(pointer int, value int) {
+	m.intCodes[m.intCodes[pointer]] = value
+}
+
+func (m *Machine) process() bool {
+	opCode := OpCode(m.intCodes[m.pointer])
+	if opCode == Halt {
+		m.output = m.intCodes[0]
 		fmt.Println("Halted!")
-		return true
-	}
-
-	end := start + 4
-	instruction := intCodes[start:end]
-	in1, in2, out := getIO(instruction)
-	fmt.Printf("instruction [%d:%d]: %v => ", start, end, instruction)
-
-	if optCode == Add {
-		sum := intCodes[in1] + intCodes[in2]
-		fmt.Printf("(%d + %d = %d)\n", intCodes[in1], intCodes[in2], sum)
-		intCodes[out] = sum
 		return false
 	}
 
-	if optCode == Multiply {
-		product := intCodes[in1] * intCodes[in2]
-		fmt.Printf("(%d + %d = %d)\n", intCodes[in1], intCodes[in2], product)
-		intCodes[out] = product
+	op, ok := Ops[opCode]
+	if !ok {
+		log.Fatalf("Unsupported command: %d", int(opCode))
 		return false
 	}
 
-	log.Fatalf("Unsupported command: %d", int(optCode))
+	param1, param2 := m.deref(m.pointer+1), m.deref(m.pointer+2)
+	output := op(param1, param2)
+
+	m.setValue(m.pointer+3, output)
+
+	// advance instruction pointer
+	m.pointer += m.size
+
 	return true
 }
 
@@ -72,16 +94,10 @@ func main() {
 	intCodes[2] = 2
 	fmt.Printf("intCodes: %d\n", intCodes)
 
-	index := 0
-	machine := &Machine{}
+	instructionSize := 4
+	machine := NewMachine(instructionSize, intCodes)
 
-	for index < len(intCodes) {
-
-		done := machine.process(index, intCodes)
-		if done {
-			break
-		}
-		index += 4
+	for machine.process() {
 	}
 
 	fmt.Printf("result: %d\n", machine.output)
