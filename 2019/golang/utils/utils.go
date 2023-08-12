@@ -2,6 +2,7 @@ package utils
 
 import (
 	"bufio"
+	"fmt"
 	"log"
 	"os"
 )
@@ -11,6 +12,13 @@ func OrDie[T any](val T, err error) T {
 		log.Fatal(err)
 	}
 	return val
+}
+
+func AocDir(dayNum int) string {
+	return fmt.Sprintf("day%02d", dayNum)
+}
+func AocInputFile(dayNum int) string {
+	return fmt.Sprintf("%s/input.txt", AocDir(dayNum))
 }
 
 // NewFileScanner opens a file and

@@ -16,7 +16,8 @@ func requiredFuel(mass int) int {
 }
 
 func main() {
-	scanner, close := utils.NewFileScanner("day01/input.txt")
+	input := utils.AocInputFile(1)
+	scanner, close := utils.NewFileScanner(input)
 	defer close()
 
 	totalFuel := 0
