@@ -24,9 +24,22 @@ func multiply(param1 int, param2 int) int {
 	return param1 * param2
 }
 
-var Ops = map[OpCode]func(int, int) int{
+var OpFunc = map[OpCode]func(int, int) int{
 	Add:      add,
 	Multiply: multiply,
+}
+
+func (m *Machine) runOp(opCode OpCode, pointer1 int, pointer2 int, outPointer int) {
+	op, ok := OpFunc[opCode]
+	if !ok {
+		log.Fatalf("Unsupported command: %d", int(opCode))
+	}
+	param1, param2 := m.deref(m.pointer+1), m.deref(m.pointer+2)
+	output := op(param1, param2)
+	fmt.Printf("instruction: %d[%d](%d[%d]:%d[%d]) => %d[%d]\n",
+		opCode, m.pointer, param1, m.pointer+1, param2, m.pointer+2, output, m.pointer+3)
+
+	m.assignValue(m.pointer+3, output)
 }
 
 type Machine struct {
@@ -48,8 +61,13 @@ func (m *Machine) deref(pointer int) int {
 	return m.intCodes[m.intCodes[pointer]]
 }
 
-func (m *Machine) setValue(pointer int, value int) {
+func (m *Machine) assignValue(pointer int, value int) {
 	m.intCodes[m.intCodes[pointer]] = value
+}
+
+// advance instruction pointer
+func (m *Machine) advanceIntCodePointer() {
+	m.pointer += m.size
 }
 
 func (m *Machine) process() bool {
@@ -60,24 +78,20 @@ func (m *Machine) process() bool {
 		return false
 	}
 
-	op, ok := Ops[opCode]
-	if !ok {
-		log.Fatalf("Unsupported command: %d", int(opCode))
-		return false
-	}
+	m.runOp(opCode, m.pointer+1, m.pointer+2, m.pointer+3)
 
-	param1, param2 := m.deref(m.pointer+1), m.deref(m.pointer+2)
-	output := op(param1, param2)
-
-	m.setValue(m.pointer+3, output)
-
-	// advance instruction pointer
-	m.pointer += m.size
+	m.advanceIntCodePointer()
 
 	return true
 }
 
-func main() {
+func (m *Machine) Run() {
+	for m.process() {
+	}
+}
+
+func getIntCodes() []int {
+
 	input := utils.AocInputFile(2)
 	scanner, close := utils.NewFileScanner(input)
 	if !scanner.Scan() {
@@ -87,7 +101,12 @@ func main() {
 
 	inputTxt := scanner.Text()
 	intCodeStrs := strings.Split(inputTxt, ",")
-	intCodes := utils.ToInts(intCodeStrs)
+	return utils.ToInts(intCodeStrs)
+
+}
+
+func main() {
+	intCodes := getIntCodes()
 
 	// Restoring the gravity assist program inputs
 	intCodes[1] = 12
@@ -96,9 +115,7 @@ func main() {
 
 	instructionSize := 4
 	machine := NewMachine(instructionSize, intCodes)
-
-	for machine.process() {
-	}
+	machine.Run()
 
 	fmt.Printf("result: %d\n", machine.output)
 }
