@@ -45,3 +45,15 @@ func ToInts(strs []string) []int {
 	}
 	return ints
 }
+
+func ToString(number int) string {
+	return strconv.Itoa(number)
+}
+
+func ToStrings(ints []int) []string {
+	strs := make([]string, len(ints))
+	for i, number := range ints {
+		strs[i] = ToString(number)
+	}
+	return strs
+}
