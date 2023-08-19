@@ -15,31 +15,48 @@ func NewPoint(x int, y int) Point {
 	return Point{x, y}
 }
 
+// ref: idea for switch stolen from Camille.Codes
+func (p Point) Move(direction byte, magnitude int) Point {
+	switch direction {
+	case 'L':
+		p.X -= magnitude
+	case 'R':
+		p.X += magnitude
+	case 'U':
+		p.Y += magnitude
+	case 'D':
+		p.Y -= magnitude
+	}
+	return p
+}
+
 type WirePathSteps map[Point]int
+
+func (w WirePathSteps) Intersections(otherWirePath WirePathSteps) []Point {
+	intersections := make([]Point, 0)
+
+	for k := range w {
+		if _, ok := otherWirePath[k]; ok {
+			intersections = append(intersections, k)
+		}
+	}
+
+	return intersections
+}
 
 func getWirePathSteps(pathString []string) WirePathSteps {
 	wirePath := make(WirePathSteps)
+	point := NewPoint(0, 0)
 
-	xyCoords := NewPoint(0, 0)
 	step := 0
 	for _, event := range pathString {
 		direction := event[0]
 		magnitude := utils.ToInt(event[1:])
 
-		sign := 1
-		if direction == 'L' || direction == 'D' {
-			sign = -1
-		}
-
 		for i := 0; i < magnitude; i++ {
-			if direction == 'L' || direction == 'R' {
-				xyCoords.X += sign
-			} else {
-
-				xyCoords.Y += sign
-			}
+			point = point.Move(direction, 1)
 			step += 1
-			wirePath[NewPoint(xyCoords.X, xyCoords.Y)] = step
+			wirePath[point] = step
 		}
 	}
 
@@ -57,9 +74,11 @@ func mhtnDistance(point Point) int {
 	return Abs(point.X) + Abs(point.Y)
 }
 
-func stepDistance(point Point,
+func stepDistance(
+	point Point,
 	wirePathStepsA WirePathSteps,
-	wirePathStepsB WirePathSteps) int {
+	wirePathStepsB WirePathSteps,
+) int {
 	stepsA := wirePathStepsA[point]
 	stepsB := wirePathStepsB[point]
 	return stepsA + stepsB
@@ -80,13 +99,7 @@ func main() {
 	wirePath1 := wirePaths[0]
 	wirePath2 := wirePaths[1]
 
-	intersections := make([]Point, 0)
-
-	for k := range wirePath1 {
-		if _, ok := wirePath2[k]; ok {
-			intersections = append(intersections, k)
-		}
-	}
+	intersections := wirePath1.Intersections(wirePath2)
 
 	if len(intersections) == 0 {
 		fmt.Println("The paths don't cross!")
