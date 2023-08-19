@@ -10,14 +10,26 @@ func isValidPassword(password []int) bool {
 
 	doubleFound := false
 
+	numRepeats := 1
+
 	for _, digit := range password[1:] {
 		if digit < prevDigit {
 			return false
 		}
+
 		if digit == prevDigit {
-			doubleFound = true
+			numRepeats++
+		} else {
+			if numRepeats == 2 {
+				doubleFound = true
+			}
+			numRepeats = 1
 		}
 		prevDigit = digit
+	}
+
+	if numRepeats == 2 {
+		return true
 	}
 
 	return doubleFound
