@@ -57,3 +57,25 @@ func ToStrings(ints []int) []string {
 	}
 	return strs
 }
+
+func NumDigits(num int) int {
+	numDigits := 1
+
+	multiplier := 10
+	for num%multiplier < num {
+		numDigits++
+		multiplier *= 10
+	}
+
+	return numDigits
+}
+
+func IntToInts(num int) []int {
+	digits := make([]int, NumDigits(num))
+
+	for i := len(digits) - 1; num > 0; i-- {
+		digits[i] = num % 10
+		num = num / 10
+	}
+	return digits
+}
