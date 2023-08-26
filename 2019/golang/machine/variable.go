@@ -29,7 +29,7 @@ func (v *Variable) Set(value int) {
 	v.memory.assign(v.valOrAddr, value)
 }
 
-func Variables(memory *Memory, params []int, paramModes []int) []Variable {
+func NewVariables(memory *Memory, params []int, paramModes []int) []Variable {
 	vars := make([]Variable, len(params))
 
 	for index, param := range params {

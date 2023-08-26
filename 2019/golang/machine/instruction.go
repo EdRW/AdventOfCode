@@ -12,14 +12,14 @@ type Instruction struct {
 func NewInstruction(instructionPointer int, memory *Memory) Instruction {
 	opCode, paramModes := parseOpCode(memory.deref(instructionPointer))
 
-	op, ok := OpFuncMap[opCode]
+	op, ok := OpMap[opCode]
 	if !ok {
 		log.Fatalf("Unsupported operation: %d", int(opCode))
 	}
 
 	params := memory.slice(instructionPointer+1, instructionPointer+1+op.numParams)
 
-	paramVars := Variables(memory, params, paramModes)
+	paramVars := NewVariables(memory, params, paramModes)
 
 	return Instruction{
 		op:        op,

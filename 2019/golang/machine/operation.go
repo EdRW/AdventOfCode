@@ -23,28 +23,28 @@ type Operation struct {
 	numParams int
 }
 
-var OpFuncMap = map[OpCode]Operation{
-	Add:         addOp,
-	Multiply:    multiplyOp,
-	ReadStdIn:   readStdInOp,
-	WriteStdOut: writeStdOutOp,
-	Halt:        noOp(Halt),
-}
-
-var addOp = Operation{
-	Add, add, 3,
-}
-
-var multiplyOp = Operation{
-	Multiply, multiply, 3,
-}
-
-var readStdInOp = Operation{
-	ReadStdIn, readStdIn, 1,
-}
-
-var writeStdOutOp = Operation{
-	WriteStdOut, writeStdOut, 1,
+var OpMap = map[OpCode]Operation{
+	Add: {
+		opCode:    Add,
+		run:       add,
+		numParams: 3,
+	},
+	Multiply: {
+		opCode:    Multiply,
+		run:       multiply,
+		numParams: 3,
+	},
+	ReadStdIn: {
+		opCode:    ReadStdIn,
+		run:       readStdIn,
+		numParams: 1,
+	},
+	WriteStdOut: {
+		opCode:    WriteStdOut,
+		run:       writeStdOut,
+		numParams: 1,
+	},
+	Halt: noOp(Halt),
 }
 
 func noOp(opCode OpCode) Operation {
