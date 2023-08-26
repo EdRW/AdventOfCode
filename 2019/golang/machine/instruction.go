@@ -17,7 +17,7 @@ func NewInstruction(instructionPointer int, memory *Memory) Instruction {
 		log.Fatalf("Unsupported operation: %d", int(opCode))
 	}
 
-	params := memory.slice(instructionPointer+1, instructionPointer+1+op.numParams)
+	params := memory.slice(instructionPointer+1, instructionPointer+1+op.size)
 
 	paramVars := NewVariables(memory, params, paramModes)
 
@@ -28,15 +28,9 @@ func NewInstruction(instructionPointer int, memory *Memory) Instruction {
 }
 
 func (i *Instruction) Size() int {
-	return i.op.numParams + 1
+	return i.op.size + 1
 }
 
-func (i *Instruction) Exec() bool {
-	if i.op.opCode == Halt {
-		return true
-	}
-
-	i.op.run(i.paramVars...)
-
-	return false
+func (i *Instruction) Exec() OpResult {
+	return i.op.run(i.paramVars...)
 }

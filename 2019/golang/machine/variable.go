@@ -29,15 +29,19 @@ func (v *Variable) Set(value int) {
 	v.memory.assign(v.valOrAddr, value)
 }
 
+func NewVariable(memory *Memory, param int, paramMode Mode) Variable {
+	return Variable{
+		memory:    memory,
+		valOrAddr: param,
+		mode:      paramMode,
+	}
+}
+
 func NewVariables(memory *Memory, params []int, paramModes []int) []Variable {
 	vars := make([]Variable, len(params))
 
 	for index, param := range params {
-		vars[index] = Variable{
-			memory:    memory,
-			valOrAddr: param,
-			mode:      getParamMode(index, paramModes),
-		}
+		vars[index] = NewVariable(memory, param, getParamMode(index, paramModes))
 	}
 
 	return vars

@@ -79,3 +79,10 @@ func IntToInts(num int) []int {
 	}
 	return digits
 }
+
+func BoolToInt(b bool) int {
+	if b {
+		return 1
+	}
+	return 0
+}
