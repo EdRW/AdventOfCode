@@ -1,7 +1,7 @@
 package main
 
 import (
-	"aoc/day02/machine"
+	"aoc/machine"
 	"aoc/utils"
 	"fmt"
 	"log"
