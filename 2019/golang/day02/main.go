@@ -5,20 +5,11 @@ import (
 	"aoc/utils"
 	"fmt"
 	"log"
-	"strings"
 )
 
 func getIntCodes() []int {
 	input := utils.AocInputFile(2)
-	scanner, close := utils.NewFileScanner(input)
-	if !scanner.Scan() {
-		log.Fatal()
-	}
-	close()
-
-	inputTxt := scanner.Text()
-	intCodeStrs := strings.Split(inputTxt, ",")
-	return utils.ToInts(intCodeStrs)
+	return machine.GetIntCodesFromFile(input)
 }
 
 func initIntCodes(intCodes []int, noun int, verb int) {
@@ -45,8 +36,7 @@ func bruteForceInputs(computer *machine.Machine, intCodes []int, goal int) (int,
 func main() {
 	intCodes := getIntCodes()
 
-	instructionSize := 4
-	computer := machine.NewMachine(instructionSize)
+	computer := machine.NewMachine()
 
 	// part 1
 	initIntCodes(intCodes, 12, 2)
