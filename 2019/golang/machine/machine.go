@@ -15,49 +15,49 @@ func (m *Memory) assign(address int, value int) {
 	(*m)[address] = value
 }
 
-type Machine struct {
+type Computer struct {
 	instructionPointer int
 	memory             Memory
 	output             int
 }
 
-func (m *Machine) init(intCodes []int, firstInstructionAddress ...int) {
+func (c *Computer) init(intCodes []int, firstInstructionAddress ...int) {
 	if len(firstInstructionAddress) > 0 {
-		m.instructionPointer = firstInstructionAddress[0]
+		c.instructionPointer = firstInstructionAddress[0]
 	} else {
-		m.instructionPointer = 0
+		c.instructionPointer = 0
 	}
 
 	intCodesCopy := make([]int, len(intCodes))
 	copy(intCodesCopy, intCodes)
-	m.memory = intCodesCopy
+	c.memory = intCodesCopy
 }
 
-func NewMachine() *Machine {
-	return &Machine{}
+func NewComputer() *Computer {
+	return &Computer{}
 }
 
-func (m *Machine) advanceInstructionPointer(size int) {
-	m.instructionPointer += size
+func (c *Computer) advanceInstructionPointer(size int) {
+	c.instructionPointer += size
 }
 
-func (m *Machine) process() bool {
-	instruction := NewInstruction(m.instructionPointer, &m.memory)
+func (c *Computer) process() bool {
+	instruction := NewInstruction(c.instructionPointer, &c.memory)
 	if instruction.Exec() {
-		m.output = m.memory[0]
+		c.output = c.memory[0]
 		return false
 	}
 
-	m.advanceInstructionPointer(instruction.Size())
+	c.advanceInstructionPointer(instruction.Size())
 
 	return true
 }
 
-func (m *Machine) Run(intCodes []int, firstInstructionAddress ...int) int {
-	m.init(intCodes, firstInstructionAddress...)
-	for m.process() {
+func (c *Computer) Run(intCodes []int, firstInstructionAddress ...int) int {
+	c.init(intCodes, firstInstructionAddress...)
+	for c.process() {
 	}
-	return m.output
+	return c.output
 }
 
 func GetIntCodesFromFile(filePath string) []int {

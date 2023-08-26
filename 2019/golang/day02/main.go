@@ -17,7 +17,7 @@ func initIntCodes(intCodes []int, noun int, verb int) {
 	intCodes[2] = verb
 }
 
-func bruteForceInputs(computer *machine.Machine, intCodes []int, goal int) (int, int) {
+func bruteForceInputs(computer *machine.Computer, intCodes []int, goal int) (int, int) {
 	for i := 0; i < 100; i++ {
 		for j := 0; j < 100; j++ {
 			// Restoring the gravity assist program inputs
@@ -36,7 +36,7 @@ func bruteForceInputs(computer *machine.Machine, intCodes []int, goal int) (int,
 func main() {
 	intCodes := getIntCodes()
 
-	computer := machine.NewMachine()
+	computer := machine.NewComputer()
 
 	// part 1
 	initIntCodes(intCodes, 12, 2)

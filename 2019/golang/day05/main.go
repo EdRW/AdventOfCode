@@ -27,6 +27,6 @@ func main() {
 	// part 1
 	fmt.Println("~~~~~ Part 1 ~~~~~")
 	// input for System ID should be 1
-	computer := machine.NewMachine()
+	computer := machine.NewComputer()
 	computer.Run(intCodes)
 }
