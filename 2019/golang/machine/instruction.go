@@ -17,7 +17,7 @@ func NewInstruction(instructionPointer int, memory *Memory) Instruction {
 		log.Fatalf("Unsupported operation: %d", int(opCode))
 	}
 
-	params := (*memory)[instructionPointer+1 : instructionPointer+1+op.numParams]
+	params := memory.slice(instructionPointer+1, instructionPointer+1+op.numParams)
 
 	paramVars := Variables(memory, params, paramModes)
 
