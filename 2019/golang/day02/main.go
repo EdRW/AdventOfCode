@@ -8,7 +8,7 @@ import (
 )
 
 func getIntCodes() []int {
-	input := utils.AocInputFile(2)
+	input := utils.AOCInputFile(2)
 	return machine.GetIntCodesFromFile(input)
 }
 

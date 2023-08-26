@@ -21,7 +21,7 @@ import (
 // [x] the diagnostic code is the answer to this problem
 
 func main() {
-	inputPath := utils.AocInputFile(5)
+	inputPath := utils.AOCInputFile(5)
 	intCodes := machine.GetIntCodesFromFile(inputPath)
 
 	// part 1

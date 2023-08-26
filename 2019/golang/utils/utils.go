@@ -15,11 +15,11 @@ func OrDie[T any](val T, err error) T {
 	return val
 }
 
-func AocDir(dayNum int) string {
+func AOCDir(dayNum int) string {
 	return fmt.Sprintf("day%02d", dayNum)
 }
-func AocInputFile(dayNum int) string {
-	return fmt.Sprintf("%s/input.txt", AocDir(dayNum))
+func AOCInputFile(dayNum int) string {
+	return fmt.Sprintf("%s/input.txt", AOCDir(dayNum))
 }
 
 // NewFileScanner opens a file and

@@ -85,7 +85,7 @@ func stepDistance(
 }
 
 func main() {
-	input := utils.AocInputFile(3)
+	input := utils.AOCInputFile(3)
 	scanner, close := utils.NewFileScanner(input)
 	defer close()
 
