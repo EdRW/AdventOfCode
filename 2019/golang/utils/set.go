@@ -4,8 +4,12 @@ package utils
 type Set[T comparable] map[T]struct{}
 
 // NewSet creates a new set
-func NewSet[T comparable]() Set[T] {
-	return make(Set[T])
+func NewSet[T comparable](values ...T) Set[T] {
+	set := make(Set[T])
+	for _, value := range values {
+		set.Add(value)
+	}
+	return set
 }
 
 // Add adds an element to the set

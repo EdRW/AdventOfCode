@@ -7,16 +7,32 @@ import (
 )
 
 type TotalOrbitsMap = map[string]int
-type OrbitalMap = map[string][]string
+type OrbitalMap = map[string]utils.Set[string]
 
 func countSatelliteOrbits(object string, orbitalMap OrbitalMap, numOrbitsMap TotalOrbitsMap) {
 	satellites := orbitalMap[object]
 	numOrbits := numOrbitsMap[object]
 
-	for _, satellite := range satellites {
+	for satellite := range satellites {
 		numOrbitsMap[satellite] = numOrbits + 1
 		countSatelliteOrbits(satellite, orbitalMap, numOrbitsMap)
 	}
+}
+
+func searchSatelliteOrbits(target string, root string, orbitalMap OrbitalMap) []string {
+
+	if orbitalMap[root].Exists(target) {
+		return []string{root}
+	}
+
+	for satellite := range orbitalMap[root] {
+		path := searchSatelliteOrbits(target, satellite, orbitalMap)
+		if len(path) > 0 {
+			return append([]string{root}, path...)
+		}
+	}
+
+	return []string{}
 }
 
 func readOrbitalMap() OrbitalMap {
@@ -35,9 +51,10 @@ func readOrbitalMap() OrbitalMap {
 		satellite := objectAndSatellite[1]
 
 		if existingSatellites, ok := orbitalMap[object]; ok {
-			orbitalMap[object] = append(existingSatellites, satellite)
+			existingSatellites.Add(satellite)
+			orbitalMap[object] = existingSatellites
 		} else {
-			satellites := []string{satellite}
+			satellites := utils.NewSet(satellite)
 			orbitalMap[object] = satellites
 		}
 	}
@@ -62,4 +79,27 @@ func main() {
 	}
 
 	fmt.Printf("Total Orbits: %d", totalOrbits)
+
+	fmt.Println()
+
+	fmt.Println("~~~~~ Part 2 ~~~~~")
+	// make arrays describing the paths between COM and YOU
+	// and between COM and SANTA
+	// traverse both arrays until they diverge.
+	// then add the remaining len of the arrays
+	youPath := searchSatelliteOrbits("YOU", COM, orbitalMap)
+	santaPath := searchSatelliteOrbits("SAN", COM, orbitalMap)
+	fmt.Println(youPath)
+	fmt.Println(santaPath)
+	i := 0
+	for i < utils.Min(len(youPath), len(santaPath)) {
+		if youPath[i] != santaPath[i] {
+			break
+		}
+		i++
+	}
+	fmt.Printf("i: %d\n", i)
+	minJumps := len(youPath) - i + len(santaPath) - i
+
+	fmt.Printf("Min Jumps: %d", minJumps)
 }
