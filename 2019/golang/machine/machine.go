@@ -1,5 +1,7 @@
 package machine
 
+import "io"
+
 type Memory []int
 
 func (m *Memory) deref(address int) int {
@@ -13,10 +15,15 @@ func (m *Memory) slice(start int, end int) Memory {
 	return (*m)[start:end]
 }
 
+type IO struct {
+	input  io.Reader
+	output io.Writer
+}
 type Computer struct {
 	instructionPointer int
 	memory             Memory
 	output             int
+	io                 IO
 }
 
 func (c *Computer) init(intCodes []int, firstInstructionAddress ...int) {
