@@ -16,7 +16,14 @@ type ExecutionContext struct {
 	// envVars utils.Set[string]
 }
 
-func NewInstruction(instructionPointer int, memory *Memory) Instruction {
+func NewExecutionContext(stdIn Reader, stdOut Writer) ExecutionContext {
+	return ExecutionContext{
+		stdIn:  stdIn,
+		stdOut: stdOut,
+	}
+}
+
+func NewInstruction(ctx ExecutionContext, instructionPointer int, memory *Memory) Instruction {
 	opCode, paramModes := parseOpCode(memory.deref(instructionPointer))
 
 	op, ok := OpMap[opCode]
@@ -31,6 +38,7 @@ func NewInstruction(instructionPointer int, memory *Memory) Instruction {
 	return Instruction{
 		op:        op,
 		paramVars: paramVars,
+		ctx:       ctx,
 	}
 }
 

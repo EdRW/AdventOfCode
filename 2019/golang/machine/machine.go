@@ -60,7 +60,10 @@ func (c *Computer) advanceInstructionPointer(size int) {
 }
 
 func (c *Computer) process() bool {
-	instruction := NewInstruction(c.instructionPointer, &c.memory)
+	instruction := NewInstruction(
+		NewExecutionContext(c.io.stdIn, c.io.stdOut),
+		c.instructionPointer, &c.memory)
+
 	result := instruction.Exec()
 	if result.halt {
 		c.output = c.memory[0]
