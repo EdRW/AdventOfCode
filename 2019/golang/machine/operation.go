@@ -2,7 +2,6 @@ package machine
 
 import (
 	"aoc/utils"
-	"fmt"
 )
 
 type OpCode int
@@ -19,7 +18,7 @@ const (
 	Halt OpCode = 99
 )
 
-type OpFunc func(...Variable) OpResult
+type OpFunc func(ExecutionContext, ...Variable) OpResult
 
 type OpResult struct {
 	halt       bool
@@ -81,11 +80,11 @@ var OpMap = map[OpCode]Operation{
 	},
 }
 
-func halt(params ...Variable) OpResult {
+func halt(ExecutionContext, ...Variable) OpResult {
 	return OpResult{halt: true}
 }
 
-func add(params ...Variable) OpResult {
+func add(ctx ExecutionContext, params ...Variable) OpResult {
 	param1 := params[0]
 	param2 := params[1]
 	output := params[2]
@@ -94,7 +93,7 @@ func add(params ...Variable) OpResult {
 	return OpResult{}
 }
 
-func multiply(params ...Variable) OpResult {
+func multiply(ctx ExecutionContext, params ...Variable) OpResult {
 	param1 := params[0]
 	param2 := params[1]
 	output := params[2]
@@ -103,25 +102,25 @@ func multiply(params ...Variable) OpResult {
 	return OpResult{}
 }
 
-func readStdIn(params ...Variable) OpResult {
+func readStdIn(ctx ExecutionContext, params ...Variable) OpResult {
 	output := params[0]
 
-	fmt.Print("Enter the System ID: ")
-	var userInput int
-	utils.OrDie(fmt.Scanf("%d", &userInput))
-
+	userInput := ctx.stdIn.Read()
 	output.Set(userInput)
+
 	return OpResult{}
 }
 
-func writeStdOut(params ...Variable) OpResult {
+func writeStdOut(ctx ExecutionContext, params ...Variable) OpResult {
 	param1 := params[0]
 
-	fmt.Printf("Output: %d\n", param1.Get())
+	outputValue := param1.Get()
+	ctx.stdOut.Write(outputValue)
+
 	return OpResult{}
 }
 
-func jmpIfTrue(params ...Variable) OpResult {
+func jmpIfTrue(ctx ExecutionContext, params ...Variable) OpResult {
 	param1 := params[0]
 	jumpAddress := params[1]
 
@@ -133,7 +132,7 @@ func jmpIfTrue(params ...Variable) OpResult {
 	return opResult
 }
 
-func jmpIfFalse(params ...Variable) OpResult {
+func jmpIfFalse(ctx ExecutionContext, params ...Variable) OpResult {
 	param1 := params[0]
 	jumpAddress := params[1]
 
@@ -145,7 +144,7 @@ func jmpIfFalse(params ...Variable) OpResult {
 	return opResult
 }
 
-func lessThan(params ...Variable) OpResult {
+func lessThan(ctx ExecutionContext, params ...Variable) OpResult {
 	param1 := params[0]
 	param2 := params[1]
 	output := params[2]
@@ -156,7 +155,7 @@ func lessThan(params ...Variable) OpResult {
 	return OpResult{}
 }
 
-func equals(params ...Variable) OpResult {
+func equals(ctx ExecutionContext, params ...Variable) OpResult {
 	param1 := params[0]
 	param2 := params[1]
 	output := params[2]

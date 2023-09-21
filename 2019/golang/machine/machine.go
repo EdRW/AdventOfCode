@@ -1,7 +1,5 @@
 package machine
 
-import "io"
-
 type Memory []int
 
 func (m *Memory) deref(address int) int {
@@ -15,15 +13,13 @@ func (m *Memory) slice(start int, end int) Memory {
 	return (*m)[start:end]
 }
 
-type IO struct {
-	input  io.Reader
-	output io.Writer
-}
 type Computer struct {
+	// ctx                ExecutionContext
 	instructionPointer int
 	memory             Memory
 	output             int
 	io                 IO
+	// envVars            utils.Set[string]
 }
 
 func (c *Computer) init(intCodes []int, firstInstructionAddress ...int) {
@@ -38,8 +34,25 @@ func (c *Computer) init(intCodes []int, firstInstructionAddress ...int) {
 	c.memory = intCodesCopy
 }
 
-func NewComputer() *Computer {
-	return &Computer{}
+type Options struct {
+	io *IO
+	// envVars *utils.Set[string]
+}
+
+func NewComputer(opts ...Options) *Computer {
+	var options Options
+	if len(opts) > 0 {
+		options = opts[0]
+	}
+
+	if options.io == nil {
+		options.io = &IO{
+			stdIn:  StdIn,
+			stdOut: StdOut,
+		}
+	}
+
+	return &Computer{io: *options.io}
 }
 
 func (c *Computer) advanceInstructionPointer(size int) {
@@ -68,4 +81,12 @@ func (c *Computer) Run(intCodes []int, firstInstructionAddress ...int) int {
 	for c.process() {
 	}
 	return c.output
+}
+
+func (c *Computer) Input(value int) {
+	c.io.stdIn.Write(value)
+}
+
+func (c *Computer) Output() int {
+	return c.io.stdOut.Read()
 }

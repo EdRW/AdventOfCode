@@ -7,6 +7,13 @@ import (
 type Instruction struct {
 	op        Operation
 	paramVars []Variable
+	ctx       ExecutionContext
+}
+
+type ExecutionContext struct {
+	stdIn  Reader
+	stdOut Writer
+	// envVars utils.Set[string]
 }
 
 func NewInstruction(instructionPointer int, memory *Memory) Instruction {
@@ -32,5 +39,5 @@ func (i *Instruction) Size() int {
 }
 
 func (i *Instruction) Exec() OpResult {
-	return i.op.run(i.paramVars...)
+	return i.op.run(i.ctx, i.paramVars...)
 }

@@ -14,6 +14,11 @@ func OrDie[T any](val T, err error) T {
 	}
 	return val
 }
+func OrDie1[T any](err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
+}
 
 func AOCDir(dayNum int) string {
 	return fmt.Sprintf("day%02d", dayNum)

@@ -17,6 +17,7 @@ func getPermutations[T any](values []T) [][]int {
 	// 01000,01000,01000,01000,01000,
 	// 2,
 	// but we can't because we're using the same phase
+	return make([][]int, 0)
 }
 
 func part1() {
@@ -40,9 +41,9 @@ func part1() {
 		input := 0
 		for i, phase := range phaseCombo {
 			amp := amps[i]
-			amp.input(phase)
-			amp.input(input)
-			input = amp.output()
+			amp.Input(phase)
+			amp.Input(input)
+			input = amp.Output()
 		}
 		maxOutput = utils.Max(maxOutput, input)
 	}

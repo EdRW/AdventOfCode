@@ -7,7 +7,7 @@ import (
 // Queue is a slice with FIFO added operations
 type Queue[T comparable] chan T
 
-func NewBufferedQueue[T comparable](capacity int) Queue[T] {
+func NewQueue[T comparable](capacity int) Queue[T] {
 	return make(Queue[T], capacity)
 }
 
@@ -30,8 +30,8 @@ func (ch Queue[T]) Enqueue(value T) error {
 
 // Remove and return the value at the front of the queue
 // and block until a value is available
-func (q *Queue[T]) BlockingDequeue() T {
-	return <-*q
+func (q Queue[T]) BlockingDequeue() T {
+	return <-q
 }
 
 // Remove and return the value at the front of the queue
