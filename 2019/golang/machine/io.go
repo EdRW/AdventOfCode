@@ -13,8 +13,8 @@ var (
 )
 
 type IO struct {
-	stdIn  ReaderWriter
-	stdOut ReaderWriter
+	StdIn  ReaderWriter
+	StdOut ReaderWriter
 }
 
 type Reader interface {
@@ -34,25 +34,25 @@ type ReadOnlyFile struct {
 	reader Reader
 }
 
-type PipeFile struct {
+type Pipe struct {
 	queue utils.Queue[int]
 }
 
-func NewPipeFile(size ...int) PipeFile {
+func NewPipe(size ...int) Pipe {
 	bufferSize := 1
 	if len(size) > 0 {
 		bufferSize = size[0]
 	}
-	return PipeFile{
+	return Pipe{
 		queue: utils.NewQueue[int](bufferSize),
 	}
 }
 
-func (io PipeFile) Read() int {
+func (io Pipe) Read() int {
 	return utils.OrDie[int](io.queue.Dequeue())
 }
 
-func (io PipeFile) Write(value int) {
+func (io Pipe) Write(value int) {
 	utils.OrDie1[int](io.queue.Enqueue(value))
 }
 

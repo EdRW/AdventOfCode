@@ -33,7 +33,15 @@ func part1() {
 
 	amps := make([]*machine.Computer, 5)
 	for i := 0; i < NUM_AMPS; i++ {
-		amps[i] = machine.NewComputer()
+		inPipe := machine.NewPipe(2)
+		outPipe := machine.NewPipe(2)
+		io := &machine.IO{
+			StdIn:  inPipe,
+			StdOut: outPipe,
+		}
+		amps[i] = machine.NewComputer(machine.Options{
+			IO: io,
+		})
 	}
 
 	maxOutput := 0

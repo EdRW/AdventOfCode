@@ -35,7 +35,7 @@ func (c *Computer) init(intCodes []int, firstInstructionAddress ...int) {
 }
 
 type Options struct {
-	io *IO
+	IO *IO
 	// envVars *utils.Set[string]
 }
 
@@ -45,14 +45,14 @@ func NewComputer(opts ...Options) *Computer {
 		options = opts[0]
 	}
 
-	if options.io == nil {
-		options.io = &IO{
-			stdIn:  StdIn,
-			stdOut: StdOut,
+	if options.IO == nil {
+		options.IO = &IO{
+			StdIn:  StdIn,
+			StdOut: StdOut,
 		}
 	}
 
-	return &Computer{io: *options.io}
+	return &Computer{io: *options.IO}
 }
 
 func (c *Computer) advanceInstructionPointer(size int) {
@@ -61,7 +61,7 @@ func (c *Computer) advanceInstructionPointer(size int) {
 
 func (c *Computer) process() bool {
 	instruction := NewInstruction(
-		NewExecutionContext(c.io.stdIn, c.io.stdOut),
+		NewExecutionContext(c.io.StdIn, c.io.StdOut),
 		c.instructionPointer, &c.memory)
 
 	result := instruction.Exec()
@@ -87,9 +87,9 @@ func (c *Computer) Run(intCodes []int, firstInstructionAddress ...int) int {
 }
 
 func (c *Computer) Input(value int) {
-	c.io.stdIn.Write(value)
+	c.io.StdIn.Write(value)
 }
 
 func (c *Computer) Output() int {
-	return c.io.stdOut.Read()
+	return c.io.StdOut.Read()
 }
