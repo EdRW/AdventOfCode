@@ -13,16 +13,26 @@ func (m *Memory) slice(start int, end int) Memory {
 	return (*m)[start:end]
 }
 
+type State int
+
+const (
+	Halted State = iota
+	Running
+	Paused
+)
+
 type Computer struct {
 	// ctx                ExecutionContext
+	name               string
 	instructionPointer int
 	memory             Memory
 	output             int
+	state              State
 	io                 IO
 	// envVars            utils.Set[string]
 }
 
-func (c *Computer) init(intCodes []int, firstInstructionAddress ...int) {
+func (c *Computer) Init(intCodes []int, firstInstructionAddress ...int) {
 	if len(firstInstructionAddress) > 0 {
 		c.instructionPointer = firstInstructionAddress[0]
 	} else {
@@ -35,7 +45,8 @@ func (c *Computer) init(intCodes []int, firstInstructionAddress ...int) {
 }
 
 type Options struct {
-	IO *IO
+	Name string
+	IO   *IO
 	// envVars *utils.Set[string]
 }
 
@@ -51,15 +62,18 @@ func NewComputer(opts ...Options) *Computer {
 			StdOut: StdOut,
 		}
 	}
+	if options.Name == "" {
+		options.Name = "computer"
+	}
 
-	return &Computer{io: *options.IO}
+	return &Computer{name: options.Name, io: *options.IO}
 }
 
 func (c *Computer) advanceInstructionPointer(size int) {
 	c.instructionPointer += size
 }
 
-func (c *Computer) process() bool {
+func (c *Computer) process() {
 	instruction := NewInstruction(
 		NewExecutionContext(c.io.StdIn, c.io.StdOut),
 		c.instructionPointer, &c.memory)
@@ -67,7 +81,10 @@ func (c *Computer) process() bool {
 	result := instruction.Exec()
 	if result.halt {
 		c.output = c.memory[0]
-		return false
+		c.state = Halted
+		return
+	} else if result.interrupt {
+		c.state = Paused
 	}
 
 	if result.jump {
@@ -75,15 +92,28 @@ func (c *Computer) process() bool {
 	} else {
 		c.advanceInstructionPointer(instruction.Size())
 	}
-
-	return true
 }
 
+// Runs until the program halts, ignoring any interrupts
 func (c *Computer) Run(intCodes []int, firstInstructionAddress ...int) int {
-	c.init(intCodes, firstInstructionAddress...)
-	for c.process() {
+	c.Init(intCodes, firstInstructionAddress...)
+	c.state = Running
+	for c.state != Halted {
+		c.process()
 	}
 	return c.output
+}
+
+// Runs until the program halts or an interrupt occurs
+func (c *Computer) RunWithInterrupts() {
+	c.state = Running
+	for c.state == Running {
+		c.process()
+	}
+}
+
+func (c *Computer) HasHalted() bool {
+	return c.state == Halted
 }
 
 func (c *Computer) Input(value int) {

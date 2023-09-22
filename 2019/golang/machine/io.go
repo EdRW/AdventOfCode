@@ -30,10 +30,6 @@ type ReaderWriter interface {
 	Write(int)
 }
 
-type ReadOnlyFile struct {
-	reader Reader
-}
-
 type Pipe struct {
 	queue utils.Queue[int]
 }
@@ -107,6 +103,10 @@ func (e UserErrorWriter) Write(value int) {
 	print(fmt.Sprintf("%s%d\n", e.prefix, value))
 }
 
+type ReadOnlyFile struct {
+	reader Reader
+}
+
 func NewReadOnlyFile(reader Reader) ReadOnlyFile {
 	return ReadOnlyFile{reader}
 }
@@ -119,12 +119,12 @@ func (io ReadOnlyFile) Write(value int) {
 	log.Fatal("ReadOnlyFile does not support Write")
 }
 
-func NewWriteOnlyFile(writer Writer) WriteOnlyFile {
-	return WriteOnlyFile{writer}
-}
-
 type WriteOnlyFile struct {
 	writer Writer
+}
+
+func NewWriteOnlyFile(writer Writer) WriteOnlyFile {
+	return WriteOnlyFile{writer}
 }
 
 func (r WriteOnlyFile) Read() int {

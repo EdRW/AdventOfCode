@@ -4,7 +4,7 @@ import (
 	"errors"
 )
 
-// Queue is a slice with FIFO added operations
+// Queue is a channel with FIFO added operations
 type Queue[T comparable] chan T
 
 func NewQueue[T comparable](capacity int) Queue[T] {

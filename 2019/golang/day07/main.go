@@ -23,8 +23,8 @@ func getPermutations[T any](set []T) [][]T {
 	//   hold the first element of the list
 	//   pass the rest of the list to recursive fn which gives the list of permutations of the sub-list
 	//   prepend the first element to each sub-list permutation
-	//   add the combined permutations to the list of permutations
-	//   move the first m elements in the list to the end of the list
+	//   add the permutations to the list of permutations
+	//   move the first element in the list to the end of the list
 	// return the list of permutations
 	//
 	// 0123, 0132
@@ -64,15 +64,25 @@ func getPermutations[T any](set []T) [][]T {
 	return permutations
 }
 
+func getPhaseSet(numPhases int, initialPhase ...int) []int {
+	offset := 0
+	if len(initialPhase) != 0 {
+		offset = initialPhase[0]
+	}
+
+	phaseValues := make([]int, numPhases)
+	for i := 0; i < numPhases; i++ {
+		phaseValues[i] = i + offset
+	}
+	return phaseValues
+}
+
 func part1(intCodes []int) int {
 	NUM_PHASES := 5
 	NUM_AMPS := 5
 
-	phaseValues := make([]int, NUM_PHASES)
-	for i := 0; i < NUM_PHASES; i++ {
-		phaseValues[i] = i
-	}
-	phaseCombos := getPermutations(phaseValues)
+	phaseSet := getPhaseSet(NUM_PHASES)
+	phaseCombos := getPermutations(phaseSet)
 
 	expectedNumPerms := utils.Factorial(NUM_PHASES)
 	if len(phaseCombos) != expectedNumPerms {
@@ -116,6 +126,71 @@ func part1(intCodes []int) int {
 	return maxOutput
 }
 
+func part2(intCodes []int) int {
+	NUM_PHASES := 5
+	NUM_AMPS := 5
+
+	phaseSet := getPhaseSet(NUM_PHASES, 5)
+	phaseCombos := getPermutations(phaseSet)
+
+	expectedNumPerms := utils.Factorial(NUM_PHASES)
+	if len(phaseCombos) != expectedNumPerms {
+		log.Fatalf("Expected %d permutations, but got %d permutations",
+			expectedNumPerms, len(phaseCombos))
+	}
+
+	// make the amplifiers
+	amps := make([]*machine.Computer, NUM_AMPS)
+	for i := 0; i < NUM_AMPS; i++ {
+		// the computers will use custom pipes for IO
+		// rather than the default StdIn and StdOut
+		inPipe := machine.NewPipe(3)
+		outPipe := machine.NewPipe(3)
+
+		// set the input and output pipes
+		options := machine.Options{
+			IO: &machine.IO{
+				StdIn:  inPipe,
+				StdOut: outPipe,
+			},
+		}
+		amp := machine.NewComputer(options)
+		amp.Init(intCodes)
+		amps[i] = amp
+	}
+
+	// run the amplifier program on the amplifiers
+	// try every combination of phases as inputs for the amps
+	maxOutput := 0
+	for _, phaseCombo := range phaseCombos {
+		for i, phase := range phaseCombo {
+			amp := amps[i]
+			amp.Input(phase)
+
+		}
+
+		allHalted := func(amps []*machine.Computer) bool {
+			return utils.All(amps,
+				func(amp *machine.Computer) bool {
+					return amp.HasHalted()
+				})
+		}
+
+		input := 0
+		for i := 0; !allHalted(amps); i++ {
+			amp := amps[i%NUM_AMPS]
+
+			amp.Input(input)
+			amp.RunWithInterrupts()
+			input = amp.Output()
+		}
+
+		maxOutput = utils.Max(maxOutput, input)
+	}
+
+	return maxOutput
+}
+
 func main() {
 
 	inputPath := utils.AOCInputFile(7)
@@ -124,4 +199,8 @@ func main() {
 	// part 1
 	output := part1(intCodes)
 	fmt.Println("Part 1 Output:", output)
+
+	// part 2
+	output = part2(intCodes)
+	fmt.Println("Part 2 Output:", output)
 }

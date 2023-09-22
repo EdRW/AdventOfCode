@@ -22,6 +22,7 @@ type OpFunc func(ExecutionContext, ...Variable) OpResult
 
 type OpResult struct {
 	halt       bool
+	interrupt  bool
 	jumpToAddr int
 	jump       bool
 }
@@ -117,7 +118,9 @@ func writeStdOut(ctx ExecutionContext, params ...Variable) OpResult {
 	outputValue := param1.Get()
 	ctx.stdOut.Write(outputValue)
 
-	return OpResult{}
+	return OpResult{
+		interrupt: true,
+	}
 }
 
 func jmpIfTrue(ctx ExecutionContext, params ...Variable) OpResult {

@@ -14,6 +14,7 @@ func OrDie[T any](val T, err error) T {
 	}
 	return val
 }
+
 func OrDie1[T any](err error) {
 	if err != nil {
 		log.Fatal(err)
@@ -23,6 +24,7 @@ func OrDie1[T any](err error) {
 func AOCDir(dayNum int) string {
 	return fmt.Sprintf("day%02d", dayNum)
 }
+
 func AOCInputFile(dayNum int) string {
 	return fmt.Sprintf("%s/input.txt", AOCDir(dayNum))
 }
@@ -120,6 +122,16 @@ func Copy[T any](slice []T) []T {
 	return sliceCopy
 }
 
+// Prepends elems... to the front of slice
 func Prepend[T any](slice []T, elems ...T) []T {
 	return append(elems, slice...)
+}
+
+func All[T any](slice []T, pred func(T) bool) bool {
+	for _, elem := range slice {
+		if !pred(elem) {
+			return false
+		}
+	}
+	return true
 }
