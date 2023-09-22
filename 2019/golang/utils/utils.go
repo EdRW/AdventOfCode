@@ -105,3 +105,21 @@ func Max(num1 int, num2 int) int {
 	}
 	return num2
 }
+
+func Factorial(n int) int {
+	result := 1
+	for i := n; i > 0; i-- {
+		result *= i
+	}
+	return result
+}
+
+func Copy[T any](slice []T) []T {
+	sliceCopy := make([]T, len(slice))
+	copy(sliceCopy, slice)
+	return sliceCopy
+}
+
+func Prepend[T any](slice []T, elems ...T) []T {
+	return append(elems, slice...)
+}
