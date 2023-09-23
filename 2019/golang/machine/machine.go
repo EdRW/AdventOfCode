@@ -16,7 +16,8 @@ func (m *Memory) slice(start int, end int) Memory {
 type State int
 
 const (
-	Halted State = iota
+	Undefined State = iota
+	Halted
 	Running
 	Paused
 )
@@ -33,6 +34,7 @@ type Computer struct {
 }
 
 func (c *Computer) Init(intCodes []int, firstInstructionAddress ...int) {
+	c.state = Undefined
 	if len(firstInstructionAddress) > 0 {
 		c.instructionPointer = firstInstructionAddress[0]
 	} else {
@@ -114,12 +116,4 @@ func (c *Computer) RunWithInterrupts() {
 
 func (c *Computer) HasHalted() bool {
 	return c.state == Halted
-}
-
-func (c *Computer) Input(value int) {
-	c.io.StdIn.Write(value)
-}
-
-func (c *Computer) Output() int {
-	return c.io.StdOut.Read()
 }

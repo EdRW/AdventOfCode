@@ -77,6 +77,13 @@ func getPhaseSet(numPhases int, initialPhase ...int) []int {
 	return phaseValues
 }
 
+func allHalted(amps []*machine.Computer) bool {
+	return utils.All(amps,
+		func(amp *machine.Computer) bool {
+			return amp.HasHalted()
+		})
+}
+
 func part1(intCodes []int) int {
 	NUM_PHASES := 5
 	NUM_AMPS := 5
@@ -92,35 +99,55 @@ func part1(intCodes []int) int {
 
 	// make the amplifiers
 	amps := make([]*machine.Computer, NUM_AMPS)
+	inputPipes := make([]machine.Pipe, NUM_AMPS)
+	// the computers will use custom pipes for IO
+	// rather than the default StdIn and StdOut
+	firstInPipe := machine.NewPipe(2)
+	thrusterPipe := machine.NewPipe(1)
+
+	inPipe := firstInPipe
 	for i := 0; i < NUM_AMPS; i++ {
-		// the computers will use custom pipes for IO
-		// rather than the default StdIn and StdOut
-		inPipe := machine.NewPipe(2)
-		outPipe := machine.NewPipe(2)
+		inputPipes[i] = inPipe
+
+		// the final amp is a special case
+		// since it outputs to thrusters
+		var outPipe machine.Pipe
+		if i == NUM_AMPS-1 {
+			outPipe = thrusterPipe
+		} else {
+			outPipe = machine.NewPipe(2)
+		}
 
 		// set the input and output pipes
 		options := machine.Options{
+			Name: fmt.Sprint("Amp", i),
 			IO: &machine.IO{
 				StdIn:  inPipe,
 				StdOut: outPipe,
 			},
 		}
 		amps[i] = machine.NewComputer(options)
-	}
 
+		inPipe = outPipe
+	}
 	// run the amplifier program on the amplifiers
 	// try every combination of phases as inputs for the amps
 	maxOutput := 0
 	for _, phaseCombo := range phaseCombos {
-		input := 0
 		for i, phase := range phaseCombo {
-			amp := amps[i]
-			amp.Input(phase)
-			amp.Input(input)
-			amp.Run(intCodes)
-			input = amp.Output()
+			inPipe := inputPipes[i]
+			inPipe.Write(phase)
 		}
-		maxOutput = utils.Max(maxOutput, input)
+
+		// Set initial input for amp 1
+		firstInPipe.Write(0)
+
+		for _, amp := range amps {
+			amp.Run(intCodes)
+		}
+
+		output := thrusterPipe.Read()
+		maxOutput = utils.Max(maxOutput, output)
 	}
 
 	return maxOutput
@@ -141,22 +168,42 @@ func part2(intCodes []int) int {
 
 	// make the amplifiers
 	amps := make([]*machine.Computer, NUM_AMPS)
-	for i := 0; i < NUM_AMPS; i++ {
-		// the computers will use custom pipes for IO
-		// rather than the default StdIn and StdOut
-		inPipe := machine.NewPipe(3)
-		outPipe := machine.NewPipe(3)
+	inputPipes := make([]machine.Pipe, NUM_AMPS)
+	// the computers will use custom pipes for IO
+	// rather than the default StdIn and StdOut
+	firstInPipe := machine.NewPipe(2)
+	thrusterPipe := machine.NewPipe(1)
 
-		// set the input and output pipes
-		options := machine.Options{
-			IO: &machine.IO{
+	inPipe := firstInPipe
+	for i := 0; i < NUM_AMPS; i++ {
+		inputPipes[i] = inPipe
+
+		// the final amp is a special case
+		// since it outputs to amp 1 and thrusters
+		var io *machine.IO
+		if i == NUM_AMPS-1 {
+			io = &machine.IO{
+				StdIn:  inPipe,
+				StdOut: machine.NewMultiWriter(firstInPipe, thrusterPipe),
+			}
+		} else {
+			outPipe := machine.NewPipe(2)
+			io = &machine.IO{
 				StdIn:  inPipe,
 				StdOut: outPipe,
-			},
+			}
+			inPipe = outPipe
+		}
+
+		// set machine options
+		options := machine.Options{
+			Name: fmt.Sprint("Amp", i),
+			IO:   io,
 		}
 		amp := machine.NewComputer(options)
 		amp.Init(intCodes)
 		amps[i] = amp
+
 	}
 
 	// run the amplifier program on the amplifiers
@@ -164,41 +211,46 @@ func part2(intCodes []int) int {
 	maxOutput := 0
 	for _, phaseCombo := range phaseCombos {
 		for i, phase := range phaseCombo {
-			amp := amps[i]
-			amp.Input(phase)
-
+			inPipe := inputPipes[i]
+			inPipe.Write(phase)
 		}
 
-		allHalted := func(amps []*machine.Computer) bool {
-			return utils.All(amps,
-				func(amp *machine.Computer) bool {
-					return amp.HasHalted()
-				})
-		}
+		// Set initial input for amp 1
+		firstInPipe.Write(0)
 
-		input := 0
+		// returns true once all of the machines in a slice have halted
+
 		for i := 0; !allHalted(amps); i++ {
-			amp := amps[i%NUM_AMPS]
+			ampNum := i % NUM_AMPS
+			amp := amps[ampNum]
 
-			amp.Input(input)
 			amp.RunWithInterrupts()
-			input = amp.Output()
+
+			if thrusterPipe.Len() > 0 {
+				output := thrusterPipe.Read()
+				maxOutput = utils.Max(maxOutput, output)
+			}
 		}
 
-		maxOutput = utils.Max(maxOutput, input)
+		// re-init the pipes and amps
+		firstInPipe.Flush()
+		for _, amp := range amps {
+			amp.Init(intCodes)
+		}
 	}
 
 	return maxOutput
 }
 
 func main() {
-
 	inputPath := utils.AOCInputFile(7)
 	intCodes := machine.GetIntCodesFromFile(inputPath)
 
 	// part 1
 	output := part1(intCodes)
 	fmt.Println("Part 1 Output:", output)
+
+	fmt.Println()
 
 	// part 2
 	output = part2(intCodes)

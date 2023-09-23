@@ -2,6 +2,7 @@ package utils
 
 import (
 	"errors"
+	"fmt"
 )
 
 // Queue is a channel with FIFO added operations
@@ -22,7 +23,7 @@ func (ch Queue[T]) BlockingEnqueue(value T) {
 // is would be exceeded
 func (ch Queue[T]) Enqueue(value T) error {
 	if len(ch) >= cap(ch) {
-		return errors.New("Queue capacity exceeded")
+		return fmt.Errorf("Queue: %v capacity (%d) exceeded, could not enqueue value %v", &ch, cap(ch), value)
 	}
 	ch.BlockingEnqueue(value)
 	return nil

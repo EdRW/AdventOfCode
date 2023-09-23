@@ -13,8 +13,8 @@ var (
 )
 
 type IO struct {
-	StdIn  ReaderWriter
-	StdOut ReaderWriter
+	StdIn  Reader
+	StdOut Writer
 }
 
 type Reader interface {
@@ -50,6 +50,18 @@ func (io Pipe) Read() int {
 
 func (io Pipe) Write(value int) {
 	utils.OrDie1[int](io.queue.Enqueue(value))
+}
+
+func (io Pipe) Len() int {
+	return len(io.queue)
+}
+
+func (io Pipe) Flush() []int {
+	out := make([]int, 0)
+	if io.Len() > 0 {
+		out = append(out, io.Read())
+	}
+	return out
 }
 
 type UserInputReader struct {
@@ -134,4 +146,18 @@ func (r WriteOnlyFile) Read() int {
 
 func (r WriteOnlyFile) Write(value int) {
 	r.writer.Write(value)
+}
+
+type MultiWriter struct {
+	writers []Writer
+}
+
+func NewMultiWriter(writers ...Writer) MultiWriter {
+	return MultiWriter{writers}
+}
+
+func (m MultiWriter) Write(value int) {
+	for _, writer := range m.writers {
+		writer.Write(value)
+	}
 }
