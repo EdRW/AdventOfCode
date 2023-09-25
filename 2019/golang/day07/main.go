@@ -99,15 +99,15 @@ func part1(intCodes []int) int {
 
 	// make the amplifiers
 	amps := make([]*machine.Computer, NUM_AMPS)
-	inputPipes := make([]machine.Pipe, NUM_AMPS)
+	inPipes := make([]machine.ReaderWriter, NUM_AMPS)
 	// the computers will use custom pipes for IO
 	// rather than the default StdIn and StdOut
 	firstInPipe := machine.NewPipe(2)
 	thrusterPipe := machine.NewPipe(1)
 
-	inPipe := firstInPipe
+	var inPipe machine.ReaderWriter = firstInPipe
 	for i := 0; i < NUM_AMPS; i++ {
-		inputPipes[i] = inPipe
+		inPipes[i] = inPipe
 
 		// the final amp is a special case
 		// since it outputs to thrusters
@@ -135,7 +135,7 @@ func part1(intCodes []int) int {
 	maxOutput := 0
 	for _, phaseCombo := range phaseCombos {
 		for i, phase := range phaseCombo {
-			inPipe := inputPipes[i]
+			inPipe := inPipes[i]
 			inPipe.Write(phase)
 		}
 
@@ -168,42 +168,39 @@ func part2(intCodes []int) int {
 
 	// make the amplifiers
 	amps := make([]*machine.Computer, NUM_AMPS)
-	inputPipes := make([]machine.Pipe, NUM_AMPS)
+	inPipes := make([]machine.ReaderWriter, NUM_AMPS)
 	// the computers will use custom pipes for IO
 	// rather than the default StdIn and StdOut
 	firstInPipe := machine.NewPipe(2)
 	thrusterPipe := machine.NewPipe(1)
 
-	inPipe := firstInPipe
+	var inPipe machine.ReaderWriter = firstInPipe
 	for i := 0; i < NUM_AMPS; i++ {
-		inputPipes[i] = inPipe
+		inPipes[i] = inPipe
 
 		// the final amp is a special case
 		// since it outputs to amp 1 and thrusters
-		var io *machine.IO
+		var outPipe machine.ReaderWriter
 		if i == NUM_AMPS-1 {
-			io = &machine.IO{
-				StdIn:  inPipe,
-				StdOut: machine.NewMultiWriter(firstInPipe, thrusterPipe),
-			}
+			multiWriter := machine.NewMultiWriter(firstInPipe, thrusterPipe)
+			outPipe = machine.NewWriteOnlyFile(multiWriter)
 		} else {
-			outPipe := machine.NewPipe(2)
-			io = &machine.IO{
-				StdIn:  inPipe,
-				StdOut: outPipe,
-			}
-			inPipe = outPipe
+			outPipe = machine.NewPipe(2)
 		}
 
 		// set machine options
 		options := machine.Options{
 			Name: fmt.Sprint("Amp", i),
-			IO:   io,
+			IO: &machine.IO{
+				StdIn:  inPipe,
+				StdOut: outPipe,
+			},
 		}
 		amp := machine.NewComputer(options)
 		amp.Init(intCodes)
 		amps[i] = amp
 
+		inPipe = outPipe
 	}
 
 	// run the amplifier program on the amplifiers
@@ -211,7 +208,7 @@ func part2(intCodes []int) int {
 	maxOutput := 0
 	for _, phaseCombo := range phaseCombos {
 		for i, phase := range phaseCombo {
-			inPipe := inputPipes[i]
+			inPipe := inPipes[i]
 			inPipe.Write(phase)
 		}
 

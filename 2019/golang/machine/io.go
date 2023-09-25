@@ -115,10 +115,12 @@ func (e UserErrorWriter) Write(value int) {
 	print(fmt.Sprintf("%s%d\n", e.prefix, value))
 }
 
+// A ReaderWriter that panics when Write() func is called
 type ReadOnlyFile struct {
 	reader Reader
 }
 
+// Adds a Write() func to a Reader that panics when called
 func NewReadOnlyFile(reader Reader) ReadOnlyFile {
 	return ReadOnlyFile{reader}
 }
@@ -131,10 +133,12 @@ func (io ReadOnlyFile) Write(value int) {
 	log.Fatal("ReadOnlyFile does not support Write")
 }
 
+// A ReaderWriter that panics when Read() func is called
 type WriteOnlyFile struct {
 	writer Writer
 }
 
+// Adds a Read() func to a Writer that panics when called
 func NewWriteOnlyFile(writer Writer) WriteOnlyFile {
 	return WriteOnlyFile{writer}
 }
@@ -148,10 +152,13 @@ func (r WriteOnlyFile) Write(value int) {
 	r.writer.Write(value)
 }
 
+// writes to the multiple writers when `Write(value)` is called
 type MultiWriter struct {
 	writers []Writer
 }
 
+// Creates a MultiWriter that writes to the multiple
+// writers provided when `Write(value)` is called
 func NewMultiWriter(writers ...Writer) MultiWriter {
 	return MultiWriter{writers}
 }
