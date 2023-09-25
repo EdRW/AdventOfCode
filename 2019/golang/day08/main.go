@@ -8,21 +8,20 @@ import (
 )
 
 func main() {
-	WIDTH := 25
-	HEIGHT := 6
-	SIZE := WIDTH * HEIGHT
+	const width = 25
+	const height = 6
+	const size = width * height
 
 	input := utils.AOCInputFile(8)
 	blob := readInputFile(input)
 
-	numLayers := len(blob) / SIZE
+	numLayers := len(blob) / size
 
 	layers := make([][]int, numLayers)
 	for i := 0; i < numLayers; i++ {
-		start := i * SIZE
-		end := (i + 1) * SIZE
+		start := i * size
+		end := (i + 1) * size
 		layers[i] = blob[start:end]
-		fmt.Println()
 	}
 
 	minZerosDigitCounts := countDigits(layers[0])
