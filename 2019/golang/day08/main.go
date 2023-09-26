@@ -35,6 +35,23 @@ func main() {
 
 	output := minZerosDigitCounts[1] * minZerosDigitCounts[2]
 	fmt.Println("Part 1 Output:", output)
+
+	// init final image
+	finalImage := make([][]int, height)
+	for row := 0; row < height; row++ {
+		finalImage[row] = make([]int, width)
+	}
+
+	// merge layers into final image
+	for row := 0; row < height; row++ {
+		for column := 0; column < width; column++ {
+			finalImage[row][column] = mergeLayerPixel(layers, width, row, column)
+		}
+	}
+
+	fmt.Println("Part 2 Output:")
+	outputImg := sPrintImage(finalImage)
+	fmt.Println(outputImg)
 }
 
 func readInputFile(filePath string) []int {
@@ -57,4 +74,36 @@ func countDigits(layer []int) [3]int {
 	}
 
 	return digitCounts
+}
+
+func mergeLayerPixel(layers [][]int, width int, row int, column int) int {
+	for _, layer := range layers {
+		pixel := layer[row*width+column]
+
+		if pixel < 2 {
+			return pixel
+		}
+	}
+	return 2
+}
+
+func sPrintImage(image [][]int) string {
+	white := '█'
+	black := '▒'
+
+	var sb strings.Builder
+	for _, row := range image {
+		for _, pixel := range row {
+			pixelRune := ' '
+			switch pixel {
+			case 0:
+				pixelRune = black
+			case 1:
+				pixelRune = white
+			}
+			sb.WriteRune(pixelRune)
+		}
+		sb.WriteString("\n")
+	}
+	return sb.String()
 }
