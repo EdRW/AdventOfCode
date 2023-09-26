@@ -11,15 +11,17 @@ type Instruction struct {
 }
 
 type ExecutionContext struct {
-	stdIn  Reader
-	stdOut Writer
+	stdIn        Reader
+	stdOut       Writer
+	relativeBase *int
 	// envVars utils.Set[string]
 }
 
-func NewExecutionContext(stdIn Reader, stdOut Writer) ExecutionContext {
+func NewExecutionContext(stdIn Reader, stdOut Writer, relativeBase *int) ExecutionContext {
 	return ExecutionContext{
-		stdIn:  stdIn,
-		stdOut: stdOut,
+		stdIn:        stdIn,
+		stdOut:       stdOut,
+		relativeBase: relativeBase,
 	}
 }
 
@@ -33,7 +35,7 @@ func NewInstruction(ctx ExecutionContext, instructionPointer int, memory *Memory
 
 	params := memory.slice(instructionPointer+1, instructionPointer+1+op.size)
 
-	paramVars := NewVariables(memory, params, paramModes)
+	paramVars := NewVariables(memory, params, paramModes, *ctx.relativeBase)
 
 	return Instruction{
 		op:        op,

@@ -15,6 +15,7 @@ const (
 	JmpIfFalse
 	LessThan
 	Equals
+	AdjustRelativeBase
 	Halt OpCode = 99
 )
 
@@ -73,6 +74,11 @@ var OpMap = map[OpCode]Operation{
 		opCode: Equals,
 		run:    equals,
 		size:   3,
+	},
+	AdjustRelativeBase: {
+		opCode: AdjustRelativeBase,
+		run:    adjustRelativeBase,
+		size:   1,
 	},
 	Halt: {
 		opCode: Equals,
@@ -166,5 +172,13 @@ func equals(ctx ExecutionContext, params ...Variable) OpResult {
 	isEqual := param1.Get() == param2.Get()
 
 	output.Set(utils.BoolToInt(isEqual))
+	return OpResult{}
+}
+
+func adjustRelativeBase(ctx ExecutionContext, params ...Variable) OpResult {
+	param1 := params[0]
+
+	*ctx.relativeBase = *ctx.relativeBase + param1.Get()
+
 	return OpResult{}
 }

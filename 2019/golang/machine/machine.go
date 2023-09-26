@@ -1,16 +1,33 @@
 package machine
 
+import "fmt"
+
 type Memory []int
 
 func (m *Memory) deref(address int) int {
+	m.grow(address)
 	return (*m)[address]
 }
+
 func (m *Memory) assign(address int, value int) {
+	m.grow(address)
 	(*m)[address] = value
 }
 
 func (m *Memory) slice(start int, end int) Memory {
 	return (*m)[start:end]
+}
+
+// doubles the memory usage
+func (m *Memory) grow(address int) {
+	if address >= len(*m) {
+		newCapacity := address * 2
+		fmt.Printf("automatically growing memory capacity from %d to %d\n",
+			len(*m), newCapacity)
+		increaseMemory := make([]int, newCapacity)
+		copy(increaseMemory, *m)
+		*m = increaseMemory
+	}
 }
 
 type State int
@@ -26,6 +43,7 @@ type Computer struct {
 	// ctx                ExecutionContext
 	name               string
 	instructionPointer int
+	relativeBase       int
 	memory             Memory
 	output             int
 	state              State
@@ -40,6 +58,8 @@ func (c *Computer) Init(intCodes []int, firstInstructionAddress ...int) {
 	} else {
 		c.instructionPointer = 0
 	}
+
+	c.relativeBase = 0
 
 	intCodesCopy := make([]int, len(intCodes))
 	copy(intCodesCopy, intCodes)
@@ -60,7 +80,7 @@ func NewComputer(opts ...Options) *Computer {
 
 	if options.IO == nil {
 		options.IO = &IO{
-			StdIn:  StdIn,
+			StdIn:  NewUserInputReader("> "),
 			StdOut: StdOut,
 		}
 	}
@@ -77,7 +97,7 @@ func (c *Computer) advanceInstructionPointer(size int) {
 
 func (c *Computer) process() {
 	instruction := NewInstruction(
-		NewExecutionContext(c.io.StdIn, c.io.StdOut),
+		NewExecutionContext(c.io.StdIn, c.io.StdOut, &c.relativeBase),
 		c.instructionPointer, &c.memory)
 
 	result := instruction.Exec()

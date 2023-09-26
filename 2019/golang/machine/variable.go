@@ -7,41 +7,67 @@ type Mode int
 const (
 	Position Mode = iota
 	Immediate
+	Relative
 )
 
 type Variable struct {
-	memory    *Memory
-	valOrAddr int
-	mode      Mode
+	memory       *Memory
+	valOrAddr    int
+	mode         Mode
+	relativeBase int
 }
 
 func (v *Variable) Get() int {
-	if v.mode == Immediate {
+	switch v.mode {
+	case Position:
+		return v.memory.deref(v.valOrAddr)
+	case Immediate:
 		return v.valOrAddr
+	case Relative:
+		return v.memory.deref(v.relativeBase + v.valOrAddr)
+	default:
+		log.Fatalf("Unsupported parameter mode: %d\n", v.mode)
+		return 0
 	}
-	return v.memory.deref(v.valOrAddr)
 }
 
 func (v *Variable) Set(value int) {
-	if v.mode == Immediate {
-		log.Fatalf("Cannot set value of immediate variable")
+	switch v.mode {
+	case Position:
+		v.memory.assign(v.valOrAddr, value)
+	case Immediate:
+		log.Fatalln("Cannot set value of immediate variable")
+	case Relative:
+		v.memory.assign(v.relativeBase+v.valOrAddr, value)
+	default:
+		log.Fatalf("Unsupported parameter mode: %d\n", v.mode)
 	}
-	v.memory.assign(v.valOrAddr, value)
 }
 
-func NewVariable(memory *Memory, param int, paramMode Mode) Variable {
+func NewVariable(memory *Memory, param int, paramMode Mode, relativeBase int) Variable {
 	return Variable{
-		memory:    memory,
-		valOrAddr: param,
-		mode:      paramMode,
+		memory:       memory,
+		valOrAddr:    param,
+		mode:         paramMode,
+		relativeBase: relativeBase,
 	}
 }
 
-func NewVariables(memory *Memory, params []int, paramModes []int) []Variable {
+func NewVariables(
+	memory *Memory,
+	params []int,
+	paramModes []int,
+	relativeBase int,
+) []Variable {
 	vars := make([]Variable, len(params))
 
 	for index, param := range params {
-		vars[index] = NewVariable(memory, param, getParamMode(index, paramModes))
+		vars[index] = NewVariable(
+			memory,
+			param,
+			getParamMode(index, paramModes),
+			relativeBase,
+		)
 	}
 
 	return vars
