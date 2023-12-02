@@ -103,11 +103,11 @@ def main():
     with open(input_filename) as f:
         lines = f.readlines()
 
-    calibration_sum= calculate_calibration(lines, lambda line : find_numbers(line))
-    print(f'part 1: {  calibration_sum}')
+    calibration_sum = calculate_calibration(lines, lambda line: find_numbers(line))
+    print(f"part 1: {  calibration_sum}")
 
-    calibration_sum=  calculate_calibration(lines, lambda line : find_numbers(line, True))
-    print(f'part 2: {  calibration_sum}')
+    calibration_sum = calculate_calibration(lines, lambda line: find_numbers(line, True))
+    print(f"part 2: {  calibration_sum}")
 
 
 if __name__ == "__main__":
