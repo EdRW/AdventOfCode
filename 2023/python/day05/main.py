@@ -15,62 +15,48 @@ class Range(NamedTuple):
 
     @property
     def end(self):
-        return self.start + self.len - 1
+        return self.start + self.len
 
     def __repr__(self) -> str:
         return f"Range: {self.start}, {self.len}"
 
 
-@dataclass
-class MapRange:
-    dest_start: int
-    src_start: int
-    len: int
+class RangeMap:
+    src: Range
+    dest: Range
+
+    def __init__(self, dest_start: int, src_start: int, len: int) -> None:
+        self.dest = Range(dest_start, len)
+        self.src = Range(src_start, len)
 
     @staticmethod
-    def parse_from_str(line: str) -> "MapRange":
+    def parse_from_str(line: str) -> "RangeMap":
         vals = [int(val) for val in line.split()]
-        return MapRange(dest_start=vals[0], src_start=vals[1], len=vals[2])
+        return RangeMap(dest_start=vals[0], src_start=vals[1], len=vals[2])
 
     def __getitem__(self, src: int) -> int:
         if src not in self:
             raise KeyError(f"{src} not found")
-        return self.dest_start + (src - self.src_start)
+        return self.dest.start + (src - self.src.start)
 
     def __contains__(self, src: int) -> bool:
-        return self.src_start <= src < (self.src_start + self.len)
-
-    @property
-    def src_range(self) -> Range:
-        return Range(self.src_start, self.len)
-
-    @property
-    def dest_range(self) -> Range:
-        return Range(self.dest_start, self.len)
-
-    @property
-    def src_end(self):
-        return self.src_start + self.len
-
-    @property
-    def dest_end(self):
-        return self.dest_start + self.len
+        return src in self.src
 
     def __repr__(self) -> str:
-        return f"MapRange: {self.dest_start}, {self.src_start}, {self.len}"
+        return f"MapRange: dest: {self.dest.start}, src: {self.src.start}"
 
 
 @dataclass
 class FarmMap:
     title: str
-    ranges: list[MapRange]
+    ranges: list[RangeMap]
 
     @staticmethod
     def parse_from_str(section: str) -> "FarmMap":
         lines = section.splitlines(keepends=False)
         title = lines[0].split()[0]
 
-        ranges = [MapRange.parse_from_str(line) for line in lines[1:]]
+        ranges = [RangeMap.parse_from_str(line) for line in lines[1:]]
 
         return FarmMap(title, ranges=ranges)
 
@@ -100,7 +86,7 @@ class FarmMap:
                 # the beginning of the source range is in the map range
                 dest_range_start = map_range[src_range.start]
                 max_supported_len = min(
-                    map_range.dest_end - dest_range_start, src_range.len
+                    map_range.dest.end - dest_range_start, src_range.len
                 )
                 dest_range = Range(dest_range_start, max_supported_len)
                 dest_ranges.add(dest_range)
@@ -119,8 +105,8 @@ class FarmMap:
                 # but the end of the source range is in the map range
 
                 dest_range_end = map_range[src_range.end]
-                max_supported_len = dest_range_end - map_range.dest_start + 1
-                dest_range = Range(map_range.dest_start, max_supported_len)
+                max_supported_len = dest_range_end - map_range.dest.start + 1
+                dest_range = Range(map_range.dest.start, max_supported_len)
                 dest_ranges.add(dest_range)
 
                 # split into separate src range and recurse
@@ -130,32 +116,35 @@ class FarmMap:
                 partial_dest_range = self.get_dest_ranges(partial_src_range)
                 dest_ranges.update(partial_dest_range)
             elif (
-                src_range.start < map_range.src_start
-                and src_range.end > map_range.src_end
+                src_range.start < map_range.src.start
+                and src_range.end > map_range.src.end
             ):
                 # both ends of the source range lie outside the map range
                 # but it is possible that some values inside the source range
                 # also lie inside the map range
 
-                dest_ranges.add(map_range.dest_range)
+                dest_ranges.add(map_range.dest)
 
                 # split into separate ranges for beginning and end and recurse
 
                 # part before map range
                 pre_partial_range = Range(
                     start=src_range.start,
-                    len=map_range.src_start - src_range.start,
+                    len=map_range.src.start - src_range.start,
                 )
                 pre_partial_dest_range = self.get_dest_ranges(pre_partial_range)
                 dest_ranges.update(pre_partial_dest_range)
 
                 # part after map range
                 post_partial_range = Range(
-                    start=map_range.src_end,
-                    len=src_range.end - map_range.src_end,
+                    start=map_range.src.end,
+                    len=src_range.end - map_range.src.end,
                 )
                 post_partial_dest_range = self.get_dest_ranges(post_partial_range)
                 dest_ranges.update(post_partial_dest_range)
+            else:
+                # the source range lies entirely outside the map range with no overlap
+                pass
 
         if not dest_ranges:
             dest_ranges.add(src_range)
