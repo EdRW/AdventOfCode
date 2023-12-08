@@ -8,12 +8,17 @@ class Race(NamedTuple):
     distance: int
 
 
-def parse_from_races_str(input: str) -> list["Race"]:
+def parse_from_races_str(input: str) -> list[Race]:
     lines = input.splitlines(keepends=False)
     times = lines[0].split(":")[1].split()
     distances = lines[1].split(":")[1].split()
     return [Race(int(time), int(dist)) for time, dist in zip(times, distances)]
 
+def parse_from_races_str_2(input: str) -> Race:
+    lines = input.splitlines(keepends=False)
+    time = "".join(lines[0].split(":")[1].split())
+    distance = "".join(lines[1].split(":")[1].split())
+    return Race(int(time), int(distance))
 
 def simulate_race_dist(btn_press_ms: int, race_time_ms: int) -> int:
     move_time_ms=max(0, race_time_ms - btn_press_ms)
@@ -41,7 +46,9 @@ def part_1(input: str):
 
 
 def part_2(input: str):
-    pass
+    race = parse_from_races_str_2(input)
+    num_ways_to_win = count_ways_to_win(race)
+    print(num_ways_to_win)
 
 
 def main():
