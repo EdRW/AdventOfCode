@@ -2,8 +2,9 @@ from dataclasses import dataclass
 from enum import IntEnum
 from typing import Callable, TypedDict, cast, Literal, NamedTuple
 from collections import Counter, deque
+from functools import cmp_to_key
 
-Card = {
+CARD_VAL = {
     "2": 2,
     "3": 3,
     "4": 4,
@@ -18,6 +19,8 @@ Card = {
     "K": 13,
     "A": 14,
 }
+
+WILD_CARD_VAL = 1
 
 
 class HandType(IntEnum):
@@ -34,33 +37,69 @@ class HandType(IntEnum):
 class Hand:
     bid: int
     cards: list[int]
-    type: HandType
+    lt_func: Callable[["Hand", "Hand"], bool]
 
-    def __init__(self, bid: int, cards: list[int]) -> None:
-        self.bid = bid
-        self.cards = cards
-        self.type = self.determine_type()
+    def __lt__(self, other: "Hand")-> bool:
+        return self.lt_func(self, other)
+        
 
-    @staticmethod
-    def parse_hands_races_str(input_str: str) -> "Hand":
-        cards_bid = input_str.split()
-        cards = [Card[char] for char in cards_bid[0]]
-        bid = int(cards_bid[1])
-        return Hand(bid, cards)
 
-    def __lt__(self, other: "Hand") -> bool:
-        if self.type == other.type:
+@dataclass
+class Game:
+    card_val: dict[str, int]
+
+    def __init__(self, wild_card: str|None = None):
+        self.card_val = {**CARD_VAL}
+        if wild_card:
+            self.card_val[wild_card] = WILD_CARD_VAL
+
+    def play(self, input_str: str):
+        hand_inputs = input_str.splitlines(keepends=False)
+
+        hands: list[Hand] =[]
+        for hand_input in hand_inputs:
+            cards_bid = hand_input.split()
+            cards = [self.card_val[char] for char in cards_bid[0]]
+            bid = int(cards_bid[1])
+            hands.append(Hand(bid=bid, cards=cards, lt_func=self._compare_hands))
+        
+        ranked_hands = sorted(hands)
+
+        total_winnings = 0
+        for i, hand in enumerate(ranked_hands):
+            rank = i + 1
+            total_winnings += rank * hand.bid
+        return total_winnings
+
+    def _compare_hands(self, hand_a: Hand, hand_b: Hand) -> bool:
+        hand_a_type = self._hand_type(hand_a)
+        hand_b_type = self._hand_type(hand_b)
+
+        if hand_a_type == hand_b_type:
             # compare individual cards
-            for my_card, other_card in zip(self.cards, other.cards):
+            for my_card, other_card in zip(hand_a.cards, hand_b.cards):
                 if my_card == other_card:
                     continue
 
-                return my_card < other_card
+                return  my_card < other_card 
+            raise ValueError('Hands cannot be the same')
 
-        return self.type < other.type
+        return hand_a_type < hand_b_type
 
-    def determine_type(self):
-        card_set = Counter(self.cards)
+    def _hand_type(self, hand: Hand):
+        card_set = Counter(hand.cards)
+
+        num_wild_cards =card_set.get(WILD_CARD_VAL)
+        if num_wild_cards and num_wild_cards != 5:
+            card_set.pop(WILD_CARD_VAL)
+            most_common = card_set.most_common()
+            most_common_key,most_common_count = most_common[0]
+            for key,count in most_common[1:]:
+                if count == most_common_count and key> most_common_key:
+                    most_common_key = key
+
+            card_set.update({most_common_key: num_wild_cards})
+
         set_len = len(card_set)
 
         if set_len == 1:
@@ -94,22 +133,15 @@ class Hand:
 
 
 def part_1(input_str: str):
-    hand_inputs = input_str.splitlines(keepends=False)
-
-    hands = [Hand.parse_hands_races_str(hand_input) for hand_input in hand_inputs]
-
-    ranked_hands = sorted(hands)
-    # [print(hand) for hand in ranked_hands]
-
-    total_winnings = 0
-    for i, hand in enumerate(ranked_hands):
-        rank = i + 1
-        total_winnings += rank * hand.bid
+    game = Game()
+    total_winnings = game.play(input_str)
     print(total_winnings)
 
 
-def part_2(input: str):
-    pass
+def part_2(input_str: str):
+    game = Game(wild_card='J')
+    total_winnings = game.play(input_str)
+    print(total_winnings)
 
 
 def main():
