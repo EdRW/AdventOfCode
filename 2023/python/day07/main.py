@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from enum import IntEnum
 from typing import Callable, TypedDict, cast, Literal, NamedTuple
-from collections import deque
+from collections import Counter, deque
 
 Card = {
     "2": 2,
@@ -60,9 +60,7 @@ class Hand:
         return self.type < other.type
 
     def determine_type(self):
-        card_set = {}
-        for card in self.cards:
-            card_set[card] = card_set.setdefault(card, 0) + 1
+        card_set = Counter(self.cards)
         set_len = len(card_set)
 
         if set_len == 1:
