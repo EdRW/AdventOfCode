@@ -13,7 +13,6 @@ def part_1(input_str: str):
         nums = [int(char) for char in line.split()]
 
         prediction = predict_next(nums)
-        print(f"prediction for {nums}:\n\t{prediction}")
 
         prediction_sums += prediction
 
@@ -21,7 +20,17 @@ def part_1(input_str: str):
 
 
 def part_2(input_str: str):
-    pass
+    lines = input_str.splitlines(keepends=False)
+
+    prediction_sums = 0
+    for line in lines:
+        nums = [int(char) for char in line.split()]
+
+        prediction = predict_prev(nums)
+
+        prediction_sums += prediction
+
+    print(prediction_sums)
 
 
 def predict_next(nums: list[int]) -> int:
@@ -30,6 +39,14 @@ def predict_next(nums: list[int]) -> int:
 
     diffs = calc_diffs(nums)
     return nums[-1] + predict_next(diffs)
+
+
+def predict_prev(nums: list[int]) -> int:
+    if sum(nums) == 0:
+        return 0
+
+    diffs = calc_diffs(nums)
+    return nums[0] - predict_prev(diffs)
 
 
 def calc_diffs(nums: list[int]) -> list[int]:
