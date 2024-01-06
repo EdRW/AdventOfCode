@@ -343,7 +343,7 @@ def part_1(pipe_map: PipeMap):
 def in_bounds(pos: Pos, x_max: int, y_max: int):
     return 0 <= pos.x < x_max and 0 <= pos.y < y_max
 
-def paint_adj_insides(pos: Pos, pipe_map: list[list[str]], memo: set[Pos]):
+def paint_adj_insides(pos: Pos, pipe_map: list[list[str]]):
     x_max = len(pipe_map[0])
     y_max = len(pipe_map)
     adj = adjacent_positions(pos, x_max=x_max, y_max=y_max)
@@ -351,9 +351,8 @@ def paint_adj_insides(pos: Pos, pipe_map: list[list[str]], memo: set[Pos]):
         symbol = pipe_map[adj_pos.y][adj_pos.x]
         if symbol != '.':
             continue
-        pipe_map[adj_pos.y][adj_pos.x] = '*'
-        memo.add(adj_pos)
-        paint_adj_insides(adj_pos, pipe_map, memo)
+        pipe_map[adj_pos.y][adj_pos.x] = 'I'
+        paint_adj_insides(adj_pos, pipe_map)
         
     
     
@@ -362,7 +361,7 @@ def paint_adj_insides(pos: Pos, pipe_map: list[list[str]], memo: set[Pos]):
 def part_2(pipe_map: PipeMap):
     pipe_set: set[Pos] = set()
     in_set: set[Pos] = set()
-    # out_set: set[Pos] = set()
+    
     clean_map = [["." for _ in row] for row in pipe_map]
     turn_counter = Counter()
     for pipe, entry_direction, exit_direction, pos in pipe_map.path():
@@ -380,78 +379,47 @@ def part_2(pipe_map: PipeMap):
             if pos in pipe_set:
                 continue
 
-    inside = "*"
-    outside = "O"
-    rev_turn = {
-        Turn.CLOCKWISE: Turn.COUNTER_CLOCKWISE,
-        Turn.COUNTER_CLOCKWISE: Turn.CLOCKWISE,
-    }
+    inside = "I"
     inside_directions =None
     for pipe, entry_direction, exit_direction, pos in pipe_map.path():
-        # print(f"{pipe.symbol}, {pos}, {entry_direction}, {exit_direction}")
         if pipe.symbol not in "LJF7":
             if inside_directions:
                 for adj_direction in inside_directions:
                     offset = displacement(adj_direction)
                     adj_pos = Pos(pos.x + offset.x, pos.y + offset.y)
-                    # print(f"inner adj: {adj_direction}, {adj_pos}")
                     if adj_pos in pipe_set or not in_bounds(adj_pos, *pipe_map.size()):
                         continue
                     clean_map[adj_pos.y][adj_pos.x] = inside
-                    # print(f"{pipe.symbol}, {pos}")
                     in_set.add(adj_pos)
                 
             continue
 
-        # print(f"{most_turns} *most")
         turn = direction_turn_map[entry_direction, exit_direction]
-        # print(turn)
         inside_turn = (
             Turn.CLOCKWISE
             if most_turns == turn
             else Turn.COUNTER_CLOCKWISE
         )
-        # print(inside_turn)
         inside_directions = get_turn_dirs(pipe.symbol, inside_turn)
         for adj_direction in inside_directions:
             offset = displacement(adj_direction)
             adj_pos = Pos(pos.x + offset.x, pos.y + offset.y)
-            # print(f"inner adj: {adj_direction}, {adj_pos}")
             if adj_pos in pipe_set or not in_bounds(adj_pos, *pipe_map.size()):
                 continue
             clean_map[adj_pos.y][adj_pos.x] = inside
-            # print(f"{pipe.symbol}, {pos}")
             in_set.add(adj_pos)
 
-        # outside_directions = get_turn_dirs(pipe.symbol, rev_turn[inside_turn])
-        # for adj_direction in outside_directions:
-        #     offset = displacement(adj_direction)
-        #     adj_pos = Pos(pos.x + offset.x, pos.y + offset.y)
-        #     # print(f"outer adj: {adj_direction}, {adj_pos}")
-        #     if adj_pos in pipe_set or not in_bounds(adj_pos, *pipe_map.size()):
-        #         continue
-        #     clean_map[adj_pos.y][adj_pos.x] = outside
-        
-    # recursively color points adjacency to inside points
-    # print(in_set)
     for pos in [key for key in in_set]:
-        paint_adj_insides(pos, clean_map, in_set)
-
-
+        paint_adj_insides(pos, clean_map)
+    
     map_str = ""
     for row in clean_map:
         map_str += "".join(row) + "\n"
-
-    
         
-
+    num_inside_points = map_str.count(inside)
     print(map_str)
-    # print(in_set)
-    print (len(in_set))
+    print (num_inside_points)
 
-    # for symbol in "LJF7":
-    #     print(f"Symbol: {symbol}: {get_inside_dirs(symbol,Turn.CLOCKWISE )}")
-    #     print(f"Symbol: {symbol}: {get_inside_dirs(symbol,Turn.COUNTER_CLOCKWISE )}")
 
 
 def main():
