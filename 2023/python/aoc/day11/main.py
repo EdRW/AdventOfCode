@@ -45,7 +45,7 @@ class Universe:
     rows_to_expand: list[int]
     cols_to_expand: list[int]
     image_data: list[str] | None = None
-    expansion_rate: int = 0
+    expansion_rate: int = 1
 
     def __post_init__(self) -> None:
         self.rows_to_expand.sort()
@@ -61,13 +61,10 @@ class Universe:
         image_data = input.splitlines(keepends=False)
         size = Size(len(image_data), len(image_data[0]))
 
-        # iterate over rows and cols
         # keep track of which indices are empty
         rows_to_expand: list[int] = []
         galaxies: list[Galaxy] = []
-
         cols_to_expand_set: set[int] = set(range(size.cols - 1))
-        # print(cols_to_expand_set)
 
         for i, row in enumerate(image_data):
             galaxy_found = False
@@ -98,22 +95,26 @@ class Universe:
                 row[: galaxy.col] + str(i + 1) + row[galaxy.col + 1 :]
             )
 
-        expanded_image_data = [*image_data]
+        expanded_image_data:list[str] = [*image_data]
 
-        if self.expansion_rate >= 1:
-            for offset, row_index in enumerate(self.rows_to_expand):
-                row = image_data[row_index]
-                for _ in range(self.expansion_rate):
-                    expanded_image_data.insert(row_index + offset, row)
+        for offset, row_index in enumerate(self.rows_to_expand):
+            row = image_data[row_index]
+            for _ in range(self.expansion_rate):
+                expanded_image_data = [
+                    *expanded_image_data[: row_index + offset],
+                    *(row * self.expansion_rate),
+                    *expanded_image_data[row_index + offset :],
+                ]
+                expanded_image_data.insert(row_index + offset, row)
 
-            for offset, col_index in enumerate(self.cols_to_expand):
-                for row_index, row in enumerate(expanded_image_data):
-                    expanded_row = (
-                        row[: col_index + offset]
-                        + "." * (self.expansion_rate)
-                        + row[col_index + offset :]
-                    )
-                    expanded_image_data[row_index] = expanded_row
+        for offset, col_index in enumerate(self.cols_to_expand):
+            for row_index, row in enumerate(expanded_image_data):
+                expanded_row = (
+                    row[: col_index + offset]
+                    + "." * (self.expansion_rate)
+                    + row[col_index + offset :]
+                )
+                expanded_image_data[row_index] = expanded_row
 
         print_str = "\n".join(expanded_image_data)
         return (
@@ -129,8 +130,6 @@ class Universe:
             return row_dist + col_dist
 
         base_dist = calc_dist(galaxy_a, galaxy_b)
-        if self.expansion_rate == 0:
-            return base_dist
 
         def num_expansions_between(
             expansion_list: list[int], val_a: int, val_b: int
@@ -155,24 +154,21 @@ class Universe:
             self.cols_to_expand, galaxy_a.col, galaxy_b.col
         )
 
-
-        return base_dist + self.expansion_rate * (
+        return base_dist + (self.expansion_rate -1) * (
             num_row_expansions + num_col_expansions
         )
 
 
 def part_1(input: str):
     universe = Universe.from_str(input)
-    universe.expand(2-1)
+    universe.expand(expansion_rate=2)
+    # print(universe)
 
     distance_sum = 0
-    # iterate over the list of Galaxies
     for i, galaxy in enumerate(universe.galaxies[:-1]):
         for j, otherGalaxy in enumerate(universe.galaxies[i + 1 :]):
-            #   use their positions to determine their distances
             dist = universe.distance(galaxy, otherGalaxy)
             # print(f"Galaxy {i+1} -> Galaxy {i + 2 + j} = {dist} distance")
-            #   sum the distances
             distance_sum += dist
 
     return distance_sum
@@ -180,17 +176,14 @@ def part_1(input: str):
 
 def part_2(input: str):
     universe = Universe.from_str(input)
-    universe.expand(1000000 - 1)
-
+    universe.expand(expansion_rate=1000000)
     # print(universe)
+
     distance_sum = 0
-    # iterate over the list of Galaxies
     for i, galaxy in enumerate(universe.galaxies[:-1]):
         for j, otherGalaxy in enumerate(universe.galaxies[i + 1 :]):
-            #   use their positions to determine their distances
             dist = universe.distance(galaxy, otherGalaxy)
             # print(f"Galaxy {i+1} -> Galaxy {i + 2 + j} = {dist} distance")
-            #   sum the distances
             distance_sum += dist
 
     return distance_sum
