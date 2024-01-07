@@ -18,11 +18,14 @@ def main():
 
     module = import_module(f"aoc.day{DAY:02}.main")
 
-    part_1_output, _ = cast(tuple[str, str], module.main())
+    part_1_output, part_2_output = cast(tuple[str, str], module.main())
 
     print("\nPart 1 Output:\n")
     print(part_1_output)
 
+
+    print("\nPart 2 Output:\n")
+    print(part_2_output)
 
 if __name__ == "__main__":
     main()
