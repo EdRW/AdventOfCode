@@ -5,8 +5,11 @@ from enum import IntEnum, StrEnum, Enum
 from math import lcm
 import os
 import subprocess
+import sys
 import time
 from typing import Callable, Iterable, Literal, NamedTuple, Self, TypedDict, cast
+
+from aoc.utils import cli
 
 
 class Direction(Enum):
@@ -90,10 +93,12 @@ class Universe:
     def __str__(self) -> str:
         return f"Universe ({self.size.rows} , {self.size.cols})\n{self.print_str}\n"
 
+
 def distance(galaxy_a: Galaxy, galaxy_b: Galaxy) -> int:
     row_dist = abs(galaxy_a.row - galaxy_b.row)
     col_dist = abs(galaxy_a.col - galaxy_b.col)
     return row_dist + col_dist
+
 
 def part_1(input: str):
     universe = Universe(input)
@@ -105,14 +110,14 @@ def part_1(input: str):
     distance_sum = 0
     # iterate over the list of Galaxies
     for i, galaxy in enumerate(expanded_Universe.galaxies[:-1]):
-        for j, otherGalaxy in enumerate(expanded_Universe.galaxies[i+1:]):
+        for j, otherGalaxy in enumerate(expanded_Universe.galaxies[i + 1 :]):
             #   use their positions to determine their distances
-            dist = distance(galaxy, otherGalaxy) 
+            dist = distance(galaxy, otherGalaxy)
             #   sum the distances
             distance_sum += dist
 
     print(distance_sum)
-    
+    return distance_sum
 
 
 def part_2():
@@ -120,26 +125,28 @@ def part_2():
 
 
 def main():
-    DAY = os.getenv("DAY")
+    args = sys.argv
+    options = cli.parse_args(args[1:])
+
+    DAY = options["day"]
     if DAY is None:
         raise EnvironmentError("Env var `$DAY` is not set.")
     DAY = int(DAY)
     print(f"Running for day {DAY}\n")
 
-    filenames = [
-        # f"day{DAY}/test_input.txt",
-        f"day{DAY}/input.txt",
-    ]
-    for input_filename in filenames:
-        with open(input_filename) as f:
-            input_str = f.read()
+    input_filename = (
+        f"aoc/day{DAY}/test_input.txt" if options["test"] else f"aoc/day{DAY}/input.txt"
+    )
+    with open(input_filename) as f:
+        input_str = f.read()
 
-        print()
-        part_1(input_str)
-        print()
+    print()
+    part_1_out = part_1(input_str)
+    print()
 
-        part_2()
-        print("\n#########################\n")
+    part_2()
+    print("\n#########################\n")
+    return (str(part_1_out), None)
 
 
 if __name__ == "__main__":
