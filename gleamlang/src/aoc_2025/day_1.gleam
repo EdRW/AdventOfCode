@@ -1,6 +1,5 @@
 import gleam/int
 import gleam/list
-import gleam/result
 import gleam/string
 
 type Direction {
@@ -10,6 +9,10 @@ type Direction {
 
 pub opaque type Rotation {
   Rotation(direction: Direction, distance: Int)
+}
+
+type Dial {
+  Dial(position: Int, zero_count: Int)
 }
 
 fn parse_direction(input: String) -> Result(Direction, Nil) {
@@ -41,8 +44,42 @@ pub fn parse(input: String) -> List(Rotation) {
   |> list.map(parse_line)
 }
 
+pub fn normalize_position(position: Int) -> Int {
+  let num_ticks = 100
+  let abs_position = int.absolute_value(position)
+
+  let abs_normalized_position = case abs_position >= num_ticks {
+    True -> abs_position % num_ticks
+    False -> abs_position
+  }
+
+  case position < 0 {
+    True if abs_normalized_position != 0 -> num_ticks - abs_normalized_position
+    _ -> abs_normalized_position
+  }
+}
+
+fn turn_dial(dial: Dial, rotation: Rotation) -> Dial {
+  let sign = case rotation.direction {
+    Left -> -1
+    Right -> 1
+  }
+
+  let new_raw_position = dial.position + sign * rotation.distance
+  let position = normalize_position(new_raw_position)
+  let zero_count = case position {
+    0 -> dial.zero_count + 1
+    _ -> dial.zero_count
+  }
+  Dial(position:, zero_count:)
+}
+
 pub fn pt_1(input: List(Rotation)) {
-  todo as "part 1 not implemented"
+  let dial =
+    input
+    |> list.fold(Dial(position: 50, zero_count: 0), turn_dial)
+
+  dial.zero_count
 }
 
 pub fn pt_2(input: List(Rotation)) {
