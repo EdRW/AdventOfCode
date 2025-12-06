@@ -1,0 +1,6 @@
+{
+  "github.copilot.enable": {
+    "gleam": false,
+    "markdown": true
+  }
+}
