@@ -1,5 +1,6 @@
 import gleam/int
 import gleam/list
+import gleam/result
 import gleam/string
 
 type Direction {
@@ -19,24 +20,29 @@ fn parse_direction(input: String) -> Result(Direction, Nil) {
   }
 }
 
-pub fn parse(input: String) -> List(Rotation) {
-  let lines =
-    input
-    |> string.trim
-    |> string.split(on: "\n")
-
-  use rotation_str <- list.map(lines)
-
-  let assert Ok(direction_str) = string.first(rotation_str)
+fn parse_line(line: String) -> Rotation {
+  // parse direction
+  let assert Ok(direction_str) = string.first(line)
+    as "Line should not be empty!"
   let assert Ok(direction) = parse_direction(direction_str)
+    as "First character of line should be 'L' or 'R'!"
 
-  let distance_str = string.drop_start(rotation_str, up_to: 1)
+  // parse distance value
+  let distance_str = string.drop_start(line, up_to: 1)
   let assert Ok(distance) = int.parse(distance_str)
+    as "Distance string should be an integer!"
   Rotation(direction:, distance:)
 }
 
-pub fn pt_1(input: List(Rotation)) {
+pub fn parse(input: String) -> List(Rotation) {
   input
+  |> string.trim
+  |> string.split(on: "\n")
+  |> list.map(parse_line)
+}
+
+pub fn pt_1(input: List(Rotation)) {
+  todo as "part 1 not implemented"
 }
 
 pub fn pt_2(input: List(Rotation)) {
