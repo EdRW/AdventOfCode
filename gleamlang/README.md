@@ -1,24 +1,19 @@
-# gleamlang
+# Advent of Code - Gleam ⭐
 
-[![Package Version](https://img.shields.io/hexpm/v/gleamlang)](https://hex.pm/packages/gleamlang)
-[![Hex Docs](https://img.shields.io/badge/hex-docs-ffaff3)](https://hexdocs.pm/gleamlang/)
+1. set the AOC_COOKIE environment variable with your Advent of Code session cookie
+2. to work a solution for a new day (or set of days) run the following command:
 
-```sh
-gleam add gleamlang@1
-```
-```gleam
-import gleamlang
-
-pub fn main() -> Nil {
-  // TODO: An example of the project in use
-}
+```bash
+gleam run new --fetch --example X Y Z ...
 ```
 
-Further documentation can be found at <https://hexdocs.pm/gleamlang>.
+3. add your input to `input/<YEAR>/X.txt`
+4. add your code to `src/aoc_<YEAR>/day_X.gleam`
+5. to run the solutions of a specific day (or set of days) run the following command:
 
-## Development
-
-```sh
-gleam run   # Run the project
-gleam test  # Run the tests
+```bash
+gleam run run X Y Z ... --example
 ```
+
+Where X Y Z are day number, e.g. 1, 2, ..., 25
+and the `--example` flag indicates to run the example input instead of the real input.
