@@ -2,5 +2,7 @@
   "github.copilot.enable": {
     "gleam": false,
     "markdown": true
-  }
+  },
+  "git.blame.statusBarItem.enabled": false,
+  "git.blame.editorDecoration.enabled": false
 }
