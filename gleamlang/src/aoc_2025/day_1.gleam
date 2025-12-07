@@ -87,20 +87,21 @@ fn turn_dial_2(dial: Dial, rotation: Rotation) -> Dial {
   let new_raw_position = dial.position + displacement
   let position = normalize_position(new_raw_position)
 
+  let zero_count = dial.zero_count + times_pass_zero(rotation, dial)
+  Dial(position:, zero_count:)
+}
+
+fn times_pass_zero(rotation: Rotation, dial: Dial) -> Int {
+  let num_ticks = 100
   let distance_to_zero = case rotation {
     CounterClockwise(_) -> dial.position
-    Clockwise(_) -> 100 - dial.position
+    Clockwise(_) -> num_ticks - dial.position
   }
-  let num_zero_pass =
-    rotation.distance
-    / 100
-    + case rotation.distance % 100 >= distance_to_zero {
-      True if distance_to_zero != 0 -> 1
-      _ -> 0
-    }
-
-  let zero_count = dial.zero_count + num_zero_pass
-  Dial(position:, zero_count:)
+  let is_passed_zero = case rotation.distance % num_ticks >= distance_to_zero {
+    True if distance_to_zero != 0 -> 1
+    _ -> 0
+  }
+  rotation.distance / num_ticks + is_passed_zero
 }
 
 pub fn pt_2(input: List(Rotation)) {
