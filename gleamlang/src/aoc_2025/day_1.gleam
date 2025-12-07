@@ -67,10 +67,12 @@ fn turn_dial(dial: Dial, rotation: Rotation) -> Dial {
 
   let new_raw_position = dial.position + sign * rotation.distance
   let position = normalize_position(new_raw_position)
-  let zero_count = case position {
-    0 -> dial.zero_count + 1
-    _ -> dial.zero_count
-  }
+  let zero_count =
+    dial.zero_count
+    + case position {
+      0 -> 1
+      _ -> 0
+    }
   Dial(position:, zero_count:)
 }
 
@@ -95,26 +97,13 @@ fn turn_dial_2(dial: Dial, rotation: Rotation) -> Dial {
   let new_raw_position = dial.position + sign * rotation.distance
   let position = normalize_position(new_raw_position)
 
-  // echo "Turn: "
-  //   <> int.to_string(rotation.distance)
-  //   <> " Position: Old "
-  //   <> int.to_string(dial.position)
-  //   <> " -> "
-  //   <> "New "
-  //   <> int.to_string(position)
-
-  // echo "Distance to zero: " <> int.to_string(distance_to_zero)
-  // echo "Rotation distance: " <> int.to_string(rotation.distance)
-
   let num_zero_pass =
     rotation.distance
     / 100
     + case rotation.distance % 100 >= distance_to_zero {
-      True if distance_to_zero > 0 -> 1
+      True if distance_to_zero != 0 -> 1
       _ -> 0
     }
-
-  // echo "Times past zero: " <> int.to_string(num_zero_pass)
 
   let zero_count = dial.zero_count + num_zero_pass
   Dial(position:, zero_count:)
