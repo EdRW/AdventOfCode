@@ -97,11 +97,18 @@ fn times_pass_zero(rotation: Rotation, dial: Dial) -> Int {
     CounterClockwise(_) -> dial.position
     Clockwise(_) -> num_ticks - dial.position
   }
-  let is_passed_zero = case rotation.distance % num_ticks >= distance_to_zero {
-    True if distance_to_zero != 0 -> 1
-    _ -> 0
+
+  // add 1 extra time passed zero
+  let is_passed_zero =
+    distance_to_zero > 0 && rotation.distance % num_ticks >= distance_to_zero
+  let maybe_extra_time = case is_passed_zero {
+    False -> 0
+    True -> 1
   }
-  rotation.distance / num_ticks + is_passed_zero
+
+  // we'll definitely pass zero with each full rotation
+  let num_full_rotations = rotation.distance / num_ticks
+  num_full_rotations + maybe_extra_time
 }
 
 pub fn pt_2(input: List(Rotation)) {
