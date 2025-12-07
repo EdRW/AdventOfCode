@@ -11,24 +11,29 @@ type Dial {
   Dial(position: Int, zero_count: Int)
 }
 
+fn parse_rotation(l_or_r: String) {
+  case l_or_r {
+    "L" -> Ok(CounterClockwise)
+    "R" -> Ok(Clockwise)
+    _ -> Error(Nil)
+  }
+}
+
 fn parse_line(line: String) -> Rotation {
   // parse direction string
   let assert Ok(direction_str) = string.first(line)
     as "Line should not be empty!"
+
+  // parse a partial Rotation with direction but no distance value
+  let assert Ok(rotation) = parse_rotation(direction_str)
+    as "First character of line should be 'L' or 'R'!"
 
   // parse distance value
   let distance_str = string.drop_start(line, up_to: 1)
   let assert Ok(distance) = int.parse(distance_str)
     as "Distance string should be an integer!"
 
-  let assert Ok(rotation) = case direction_str {
-    "L" -> Ok(CounterClockwise(distance:))
-    "R" -> Ok(Clockwise(distance:))
-    _ -> Error(Nil)
-  }
-    as "First character of line should be 'L' or 'R'!"
-
-  rotation
+  rotation(distance)
 }
 
 pub fn parse(input: String) -> List(Rotation) {
