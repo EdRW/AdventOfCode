@@ -2,39 +2,33 @@ import gleam/int
 import gleam/list
 import gleam/string
 
-type Direction {
-  Left
-  Right
-}
-
 pub opaque type Rotation {
-  Rotation(direction: Direction, distance: Int)
+  CounterClockwise(distance: Int)
+  Clockwise(distance: Int)
 }
 
 type Dial {
   Dial(position: Int, zero_count: Int)
 }
 
-fn parse_direction(input: String) -> Result(Direction, Nil) {
-  case input {
-    "L" -> Ok(Left)
-    "R" -> Ok(Right)
-    _ -> Error(Nil)
-  }
-}
-
 fn parse_line(line: String) -> Rotation {
-  // parse direction
+  // parse direction string
   let assert Ok(direction_str) = string.first(line)
     as "Line should not be empty!"
-  let assert Ok(direction) = parse_direction(direction_str)
-    as "First character of line should be 'L' or 'R'!"
 
   // parse distance value
   let distance_str = string.drop_start(line, up_to: 1)
   let assert Ok(distance) = int.parse(distance_str)
     as "Distance string should be an integer!"
-  Rotation(direction:, distance:)
+
+  let assert Ok(rotation) = case direction_str {
+    "L" -> Ok(CounterClockwise(distance:))
+    "R" -> Ok(Clockwise(distance:))
+    _ -> Error(Nil)
+  }
+    as "First character of line should be 'L' or 'R'!"
+
+  rotation
 }
 
 pub fn parse(input: String) -> List(Rotation) {
@@ -60,12 +54,12 @@ pub fn normalize_position(position: Int) -> Int {
 }
 
 fn turn_dial(dial: Dial, rotation: Rotation) -> Dial {
-  let sign = case rotation.direction {
-    Left -> -1
-    Right -> 1
+  let displacement = case rotation {
+    CounterClockwise(distance) -> -1 * distance
+    Clockwise(distance) -> distance
   }
 
-  let new_raw_position = dial.position + sign * rotation.distance
+  let new_raw_position = dial.position + displacement
   let position = normalize_position(new_raw_position)
   let zero_count =
     dial.zero_count
@@ -85,18 +79,18 @@ pub fn pt_1(input: List(Rotation)) {
 }
 
 fn turn_dial_2(dial: Dial, rotation: Rotation) -> Dial {
-  let sign = case rotation.direction {
-    Left -> -1
-    Right -> 1
-  }
-  let distance_to_zero = case rotation.direction {
-    Left -> dial.position
-    Right -> 100 - dial.position
+  let displacement = case rotation {
+    CounterClockwise(distance) -> -1 * distance
+    Clockwise(distance) -> distance
   }
 
-  let new_raw_position = dial.position + sign * rotation.distance
+  let new_raw_position = dial.position + displacement
   let position = normalize_position(new_raw_position)
 
+  let distance_to_zero = case rotation {
+    CounterClockwise(_) -> dial.position
+    Clockwise(_) -> 100 - dial.position
+  }
   let num_zero_pass =
     rotation.distance
     / 100
