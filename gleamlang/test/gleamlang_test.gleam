@@ -47,3 +47,10 @@ pub fn normalize_distance_test() {
       as string.concat(["Input: ", int.to_string(-1 * input)])
   })
 }
+
+pub fn mod_test() {
+  // it gives the normalized size of the turn
+  assert 249 % 100 == 49
+  assert 99 % 100 == 99
+  assert 1 / 10 == 0
+}

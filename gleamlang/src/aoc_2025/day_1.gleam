@@ -82,6 +82,48 @@ pub fn pt_1(input: List(Rotation)) {
   dial.zero_count
 }
 
+fn turn_dial_2(dial: Dial, rotation: Rotation) -> Dial {
+  let sign = case rotation.direction {
+    Left -> -1
+    Right -> 1
+  }
+  let distance_to_zero = case rotation.direction {
+    Left -> dial.position
+    Right -> 100 - dial.position
+  }
+
+  let new_raw_position = dial.position + sign * rotation.distance
+  let position = normalize_position(new_raw_position)
+
+  // echo "Turn: "
+  //   <> int.to_string(rotation.distance)
+  //   <> " Position: Old "
+  //   <> int.to_string(dial.position)
+  //   <> " -> "
+  //   <> "New "
+  //   <> int.to_string(position)
+
+  // echo "Distance to zero: " <> int.to_string(distance_to_zero)
+  // echo "Rotation distance: " <> int.to_string(rotation.distance)
+
+  let num_zero_pass =
+    rotation.distance
+    / 100
+    + case rotation.distance % 100 >= distance_to_zero {
+      True if distance_to_zero > 0 -> 1
+      _ -> 0
+    }
+
+  // echo "Times past zero: " <> int.to_string(num_zero_pass)
+
+  let zero_count = dial.zero_count + num_zero_pass
+  Dial(position:, zero_count:)
+}
+
 pub fn pt_2(input: List(Rotation)) {
-  todo as "part 2 not implemented"
+  let dial =
+    input
+    |> list.fold(Dial(position: 50, zero_count: 0), turn_dial_2)
+
+  dial.zero_count
 }
