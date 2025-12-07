@@ -12,6 +12,9 @@ version = "1.0.0"
 # For a full reference of all the available options, you can have a look at
 # https://gleam.run/writing-gleam/gleam-toml/.
 
+[gladvent.2025]
+1 = { pt_1 = 1129, pt_2 = 6638 }
+
 [dependencies]
 gleam_stdlib = ">= 0.44.0 and < 2.0.0"
 gladvent = ">= 2.2.1 and < 3.0.0"
