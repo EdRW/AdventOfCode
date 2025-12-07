@@ -11,12 +11,15 @@ type Dial {
   Dial(position: Int, zero_count: Int)
 }
 
-fn parse_rotation(l_or_r: String) {
-  case l_or_r {
-    "L" -> Ok(CounterClockwise)
-    "R" -> Ok(Clockwise)
-    _ -> Error(Nil)
-  }
+// --------------------------------------------------------------------------
+//                                   Parser                                  
+// --------------------------------------------------------------------------
+
+pub fn parse(input: String) -> List(Rotation) {
+  input
+  |> string.trim
+  |> string.split(on: "\n")
+  |> list.map(parse_line)
 }
 
 fn parse_line(line: String) -> Rotation {
@@ -36,26 +39,24 @@ fn parse_line(line: String) -> Rotation {
   rotation(distance)
 }
 
-pub fn parse(input: String) -> List(Rotation) {
-  input
-  |> string.trim
-  |> string.split(on: "\n")
-  |> list.map(parse_line)
+fn parse_rotation(l_or_r: String) {
+  case l_or_r {
+    "L" -> Ok(CounterClockwise)
+    "R" -> Ok(Clockwise)
+    _ -> Error(Nil)
+  }
 }
 
-pub fn normalize_position(position: Int) -> Int {
-  let num_ticks = 100
-  let abs_position = int.absolute_value(position)
+// --------------------------------------------------------------------------
+//                                   Part 1                                  
+// --------------------------------------------------------------------------
 
-  let abs_normalized_position = case abs_position >= num_ticks {
-    True -> abs_position % num_ticks
-    False -> abs_position
-  }
+pub fn pt_1(input: List(Rotation)) {
+  let dial =
+    input
+    |> list.fold(Dial(position: 50, zero_count: 0), turn_dial)
 
-  case position < 0 {
-    True if abs_normalized_position != 0 -> num_ticks - abs_normalized_position
-    _ -> abs_normalized_position
-  }
+  dial.zero_count
 }
 
 fn turn_dial(dial: Dial, rotation: Rotation) -> Dial {
@@ -75,10 +76,29 @@ fn turn_dial(dial: Dial, rotation: Rotation) -> Dial {
   Dial(position:, zero_count:)
 }
 
-pub fn pt_1(input: List(Rotation)) {
+pub fn normalize_position(position: Int) -> Int {
+  let num_ticks = 100
+  let abs_position = int.absolute_value(position)
+
+  let abs_normalized_position = case abs_position >= num_ticks {
+    True -> abs_position % num_ticks
+    False -> abs_position
+  }
+
+  case position < 0 {
+    True if abs_normalized_position != 0 -> num_ticks - abs_normalized_position
+    _ -> abs_normalized_position
+  }
+}
+
+// --------------------------------------------------------------------------
+//                                   Part 2                                  
+// --------------------------------------------------------------------------
+
+pub fn pt_2(input: List(Rotation)) {
   let dial =
     input
-    |> list.fold(Dial(position: 50, zero_count: 0), turn_dial)
+    |> list.fold(Dial(position: 50, zero_count: 0), turn_dial_2)
 
   dial.zero_count
 }
@@ -114,12 +134,4 @@ fn times_pass_zero(rotation: Rotation, dial: Dial) -> Int {
   // we'll definitely pass zero with each full rotation
   let num_full_rotations = rotation.distance / num_ticks
   num_full_rotations + maybe_extra_time
-}
-
-pub fn pt_2(input: List(Rotation)) {
-  let dial =
-    input
-    |> list.fold(Dial(position: 50, zero_count: 0), turn_dial_2)
-
-  dial.zero_count
 }
