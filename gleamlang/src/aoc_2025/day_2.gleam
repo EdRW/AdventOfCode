@@ -1,3 +1,4 @@
+import gleam/float
 import gleam/int
 import gleam/list
 import gleam/string
@@ -38,12 +39,11 @@ fn parse_line(line: String) -> IdRange {
 
 pub fn pt_1(input: List(IdRange)) {
   input
-  |> list.flat_map(find_invalid_ids)
+  |> list.map(sum_invalid_ids_in_range)
   |> list.fold(from: 0, with: fn(acc, invalid_id) { acc + invalid_id })
 }
 
-fn find_invalid_ids(id_range: IdRange) -> List(Int) {
-  todo as "find_invalid_ids not implemented"
+fn sum_invalid_ids_in_range(id_range: IdRange) -> Int {
   // an id is invalid if:
   //   when the digits of the number are treated as an array,
   //   and the array is split in half, 
@@ -71,6 +71,53 @@ fn find_invalid_ids(id_range: IdRange) -> List(Int) {
   // 101    : 1010 ... 9999
   // 1001   : 100100 ... 999999
   // 100001 : 10001000 ...99999999
+  let first_sum = sum_invalid_ids_till(id_range.0 - 1)
+  let second_sum = sum_invalid_ids_till(id_range.1)
+  second_sum - first_sum
+}
+
+pub fn sum_invalid_ids_till(id: Int) -> Int {
+  let id_float = int.to_float(id)
+  let num_digits = calc_num_digits(id)
+  let i = num_digits / 2
+  case num_digits % 2 {
+    0 -> {
+      let i_float = int.to_float(i)
+      let assert Ok(ten_to_i) = float.power(10.0, i_float)
+      let assert Ok(ten_to_i_one) = float.power(10.0, i_float -. 1.0)
+      let n_val = float.floor(id_float /. { ten_to_i +. 1.0 })
+      let current_term =
+        { ten_to_i +. 1.0 }
+        /. 2.0
+        *. {
+          n_val *. { n_val +. 1.0 } -. ten_to_i_one *. { ten_to_i_one -. 1.0 }
+        }
+      float.round(current_term) + sum_invalids_for_i(i - 1)
+    }
+    _ -> sum_invalids_for_i(i)
+  }
+}
+
+pub fn sum_invalids_for_i(i: Int) -> Int {
+  case i < 1 {
+    True -> 0
+    False -> {
+      let i_float = int.to_float(i)
+      let assert Ok(term_1) = float.power(10.0, 3.0 *. i_float)
+      let assert Ok(term_2) = float.power(10.0, 2.0 *. i_float)
+      let assert Ok(term_3) = float.power(10.0, i_float)
+      let result = 0.5 *. { 0.99 *. term_1 +. 0.09 *. term_2 -. 0.9 *. term_3 }
+      float.round(result) + sum_invalids_for_i(i - 1)
+    }
+  }
+}
+
+pub fn calc_num_digits(num: Int) -> Int {
+  let num_float = int.to_float(num)
+  let assert Ok(ln_num) = float.logarithm(num_float)
+  let assert Ok(ln_10) = float.logarithm(10.0)
+  let log_num = ln_num /. ln_10
+  float.round(float.floor(log_num)) + 1
 }
 
 // --------------------------------------------------------------------------

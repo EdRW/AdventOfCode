@@ -14,6 +14,7 @@ version = "1.0.0"
 
 [gladvent.2025]
 1 = { pt_1 = 1129, pt_2 = 6638 }
+2 = { pt_1 = 40398804950}
 
 [dependencies]
 gleam_stdlib = ">= 0.44.0 and < 2.0.0"
